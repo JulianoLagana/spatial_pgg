@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from pgg import compute_pgg_payoffs
-from update_strategies import get_soft_noisy_update_according_to_best_neighbor_fun
+from update_strategies import soft_noisy_update_according_to_best_neighbor
 
 
 # Configurations
@@ -18,7 +18,9 @@ n_players = 10
 starting_money = 100
 mult_factor = 1.5
 n_rounds = 30
-update_strategy = get_soft_noisy_update_according_to_best_neighbor_fun(alpha=0.5, noise_intensity=1)
+alpha = 0.5
+noise_intensity = 1
+update_strategy = soft_noisy_update_according_to_best_neighbor
 
 # Initializations
 players_money = np.array([starting_money]*n_players)
@@ -36,7 +38,9 @@ for i_round in range(n_rounds):
                                                       player_strategies[i_player],
                                                       payoffs[i_player],
                                                       player_strategies,
-                                                      payoffs)
+                                                      payoffs,
+                                                      alpha,
+                                                      noise_intensity)
 
     # Save contributions made this round
     contribs[i_round+1, :] = player_strategies.copy()

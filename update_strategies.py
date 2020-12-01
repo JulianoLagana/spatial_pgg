@@ -10,7 +10,8 @@ def soft_noisy_update_according_to_best_neighbor(player_money: float,
                                                  noise_intensity: float) -> float:
     """
     Function used to update a player's strategy given knowledge about what other players played and their payoffs in the
-     previous round.
+     previous round. This essentially copies the strategy of the best performing neighbor, but in a soft way (hence
+     alpha), and after the strategy is copied some noise is added to it.
     @param player_money: Maximum value this player can contribute in each round.
     @param player_strategy: How much money this player contributed in the previous round.
     @param player_payoff: Payoff received by this player from playing in the previous round.

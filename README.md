@@ -3,7 +3,7 @@
 Repository for developing a spatial simulation of the public goods game. Work in progress.
 
 ### Instructions for using this repo
-These instructions have been tested for Ubuntu 18.04.03.
+These instructions have been tested for Ubuntu 18.04.3.
 - Create a new virtual environment with Python 3.6.9 (`conda create -n spatial_pgg_env python=3.6.9` if you're using conda).
 - Activate the virtual environment you created (`conda activate spatial_pgg_env`).
 - Install the required packages with `pip install -r requirements.txt`.

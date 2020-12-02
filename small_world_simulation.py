@@ -4,7 +4,7 @@ import networkx as nx
 
 from pgg import compute_pgg_payoffs
 from update_strategies import soft_noisy_update_according_to_best_neighbor
-from plot_utils import plot_linked_graph_and_curves
+from plot_utils import LinkedPlotter
 
 
 # Configurations
@@ -70,5 +70,5 @@ ax[1].set_ylabel('Contributions')
 plt.grid()
 
 # Plot
-plot_linked_graph_and_curves(graph, contribution_curves, ax[0], ax[1], fig)
+linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig)
 plt.show()

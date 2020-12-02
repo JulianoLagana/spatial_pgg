@@ -4,6 +4,7 @@ import networkx as nx
 
 from pgg import compute_pgg_payoffs
 from update_strategies import soft_noisy_update_according_to_best_neighbor
+from plot_utils import plot_linked_graph_and_curves
 
 
 # Configurations
@@ -54,15 +55,20 @@ for i_round in range(n_rounds):
     # Save contributions made this round
     contribs[i_round+1, :] = player_strategies.copy()
 
-plt.subplot(121)
-plt.title('Graph structure')
-nx.draw(graph, with_labels=True)
+# Change the format of the saved contributions for plotting
+xs = [i for i in range(n_rounds+1)]
+contribution_curves = []
+for i_player in range(n_players):
+    contribution_curves.append([xs, contribs[:, i_player]])
 
-plt.subplot(122)
-plt.title('Contributions over time')
-plt.plot(contribs, '.-')
-plt.xlabel('Round number')
-plt.ylabel('Contributions')
+# Create plotting window
+fig, ax = plt.subplots(ncols=2, figsize=(15, 6))
+ax[0].set_title('Graph (hover a node to outline its contribution)')
+ax[1].set_title('Contributions over time')
+ax[1].set_xlabel('Round number')
+ax[1].set_ylabel('Contributions')
 plt.grid()
-plt.show()
 
+# Plot
+plot_linked_graph_and_curves(graph, contribution_curves, ax[0], ax[1], fig)
+plt.show()

@@ -4,6 +4,20 @@ import networkx as nx
 
 
 class LinkedPlotter:
+    """
+    Plots a graph and line plots in user-specified axes.
+
+    There is a one-to-one pairing between nodes in the graph and curves provided, such that if a user hovers their mouse
+    over one of the nodes, the corresponding curve in the line plots will be outlined. Furthermore, each node in the
+    graph is colored according to the last y-value (the value corresponding to the largest x)
+
+    Params:
+        graph: Graph to be plotted.
+        curves: List of curves to be plotted. Each element is a list [xs, ys], where xs and ys are respectively a list
+        of the x and y coordinates of the points to be plotted.
+        ax_graph: The axis in which the graph should be plotted.
+        ax_curves: The axis in which the curves should be plotted.
+    """
     def __init__(self, graph, curves, ax_graph, ax_curves, fig):
         self.ax_graph = ax_graph
         self.ax_curves = ax_curves

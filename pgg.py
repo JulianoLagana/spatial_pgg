@@ -1,4 +1,5 @@
 import numpy as np
+import networkx
 
 
 def compute_pgg_payoffs(players_money: np.ndarray, contributions: np.ndarray, mult_factor: float) -> np.ndarray:
@@ -12,6 +13,19 @@ def compute_pgg_payoffs(players_money: np.ndarray, contributions: np.ndarray, mu
 
     # Return payoffs for each player
     return divvy - contributions
+
+
+def compute_pgg_neighborhood_wise_payoffs(graph: networkx.classes.graph.Graph, players_money: np.ndarray,
+                                          players_stratategies: np.ndarray, mult_factor: float) -> np.ndarray:
+    n_players = len(graph.nodes)
+    payoffs = np.zeros((n_players,))
+    for i_player in list(graph.nodes):
+        neigh_idxs = list(graph.adj[i_player])
+        subgame_players = neigh_idxs + [i_player]
+        subgame_moneys = players_money[subgame_players]
+        subgame_strategies = players_stratategies[subgame_players]
+        payoffs[i_player] = compute_pgg_payoffs(subgame_moneys, subgame_strategies, mult_factor)[-1]
+    return payoffs
 
 
 # Example usage

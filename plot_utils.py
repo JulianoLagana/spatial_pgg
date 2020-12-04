@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
 import numpy as np
 import networkx as nx
 
@@ -9,7 +10,8 @@ class LinkedPlotter:
 
     There is a one-to-one pairing between nodes in the graph and curves provided, such that if a user hovers their mouse
     over one of the nodes, the corresponding curve in the line plots will be outlined. Furthermore, each node in the
-    graph is colored according to the last y-value (the value corresponding to the largest x)
+    graph is colored according to its contribution at time-step k, where k is chosen via a slider in the bottom of the
+    figure.
 
     Params:
         graph: Graph to be plotted.
@@ -19,17 +21,19 @@ class LinkedPlotter:
         ax_curves: The axis in which the curves should be plotted.
     """
     def __init__(self, graph, curves, ax_graph, ax_curves, fig):
+        plt.subplots_adjust(left=0.25, bottom=0.25)
+        self.curves = curves
         self.ax_graph = ax_graph
         self.ax_curves = ax_curves
         self.fig = fig
 
         # Plot graph, nodes are color-coded
-        colors = [curve[1][-1] for curve in curves]
-        nx.draw_networkx(graph, with_labels=True, ax=ax_graph, node_color=colors)
+        colors = [curve[1][-1] for curve in self.curves]
+        nx.draw_networkx(graph, with_labels=True, ax=ax_graph, node_color=colors, vmin=0, vmax=100)
 
         # Plot curves
         self.lines = []
-        for curve in curves:
+        for curve in self.curves:
             line, = ax_curves.plot(curve[0], curve[1])  # curve: [xs, ys]
             self.lines.append(line)
 
@@ -40,8 +44,24 @@ class LinkedPlotter:
             self.colors.append(line.get_color())
             self.zorders.append(line.get_zorder())
 
-        fig.canvas.mpl_connect("motion_notify_event", self.hover)
+        self.fig.canvas.mpl_connect("motion_notify_event", self.hover)
         self.needs_refresh_on_hover_off = False
+
+        # Create a slider for the simulation steps (for node coloring)
+        ax_slider = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor='white')
+        n_sim_steps = len(self.curves[0][0])
+        self.slider = Slider(ax_slider, 'Simulation step', 0, n_sim_steps-1, valinit=n_sim_steps, valstep=1)
+        self.slider.on_changed(self.update_node_colors)
+
+    def update_node_colors(self, value):
+        pc = self.ax_graph.collections[0]
+        cmap = pc.cmap
+        min_v, max_v = pc.get_clim()
+        new_colors = np.array([curve[1][int(value)] for curve in self.curves])
+        percents = np.clip((new_colors - min_v) / (max_v - min_v), 0, 1)
+        pc.set_color(cmap(percents))
+        self.fig.canvas.draw_idle()
+        # TODO: add vertical line on the curve plot to show in which simulation step we're in.
 
     def update_curve_colors(self, ind):
         for i, l in enumerate(self.lines):

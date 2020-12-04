@@ -21,7 +21,10 @@ def soft_noisy_update_according_to_best_neighbor(player_money: float,
     @param noise_intensity: Intensity of the noise added to the resulting computed strategy.
     @return: Updated strategy for this player.
     """
-    best_neighbor_strategy = neighbors_strategy[np.argmax(neighbors_payoff)]
-    noise = np.random.normal(0, noise_intensity)
-    new_strategy = np.clip(alpha*best_neighbor_strategy + (1-alpha)*player_strategy + noise, 0, player_money)
-    return float(new_strategy)
+    if player_payoff < np.max(neighbors_payoff):
+        best_neighbor_strategy = neighbors_strategy[np.argmax(neighbors_payoff)]
+        noise = np.random.normal(0, noise_intensity)
+        new_strategy = np.clip(alpha*best_neighbor_strategy + (1-alpha)*player_strategy + noise, 0, player_money)
+        return float(new_strategy)
+    else:
+        return player_strategy

@@ -9,8 +9,9 @@ class LinkedPlotter:
         self.ax_curves = ax_curves
         self.fig = fig
 
-        # Plot graph
-        nx.draw_networkx(graph, with_labels=True, ax=ax_graph)
+        # Plot graph, nodes are color-coded
+        colors = [curve[1][-1] for curve in curves]
+        nx.draw_networkx(graph, with_labels=True, ax=ax_graph, node_color=colors)
 
         # Plot curves
         self.lines = []

@@ -34,8 +34,10 @@ class LinkedPlotter:
         # Plot curves
         self.lines = []
         for curve in self.curves:
-            line, = ax_curves.plot(curve[0], curve[1])  # curve: [xs, ys]
+            line, = self.ax_curves.plot(curve[0], curve[1])  # curve: [xs, ys]
             self.lines.append(line)
+        n_sim_steps = len(self.curves[0][0])
+        self.ax_curves.set_xlim([-0.1, n_sim_steps-1])
 
         # Save current curves colors and zorders for later 'hover off' update
         self.colors = []
@@ -49,19 +51,25 @@ class LinkedPlotter:
 
         # Create a slider for the simulation steps (for node coloring)
         ax_slider = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor='white')
-        n_sim_steps = len(self.curves[0][0])
         self.slider = Slider(ax_slider, 'Simulation step', 0, n_sim_steps-1, valinit=n_sim_steps, valstep=1)
         self.slider.on_changed(self.update_node_colors)
 
+        # Add guiding curve to curves plot
+        self.guiding_curve = self.ax_curves.axvline(n_sim_steps-1, linestyle='--', color='r')
+
     def update_node_colors(self, value):
+        # Update color of each node in the graph
         pc = self.ax_graph.collections[0]
         cmap = pc.cmap
         min_v, max_v = pc.get_clim()
         new_colors = np.array([curve[1][int(value)] for curve in self.curves])
         percents = np.clip((new_colors - min_v) / (max_v - min_v), 0, 1)
         pc.set_color(cmap(percents))
+
+        # Adjust guiding curve x-position
+        self.guiding_curve.set_xdata([value, value])
+
         self.fig.canvas.draw_idle()
-        # TODO: add vertical line on the curve plot to show in which simulation step we're in.
 
     def update_curve_colors(self, ind):
         for i, l in enumerate(self.lines):

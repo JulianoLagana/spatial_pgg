@@ -29,7 +29,12 @@ class LinkedPlotter:
 
         # Plot graph, nodes are color-coded
         colors = [curve[1][-1] for curve in self.curves]
-        nx.draw_networkx(graph, with_labels=True, ax=ax_graph, node_color=colors, vmin=0, vmax=100)
+        sizes = [graph.degree(i)*10 for i in range(graph.order())]
+        #Plots nodes in a circle: specially good for the small-world but also looks good for scale-free
+        nx.draw_circular(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+        #Plots nodes so that the graph is visualized better and sometimes can be good for indentifying clusters
+        #nx.draw_kamada_kawai(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+
 
         # Plot curves
         self.lines = []

@@ -21,7 +21,7 @@ else:
 n_players = 30
 starting_money = 100
 mult_factor = 3
-n_rounds = 10
+n_rounds = 100
 connectivity = 4
 prob_new_edge = 0.3
 alpha = 0.5
@@ -34,6 +34,7 @@ player_strategies = np.random.random(size=n_players)*starting_money
 contribs = np.zeros((n_rounds+1, n_players))
 contribs[0, :] = player_strategies.copy()
 graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+#graph = nx.barabasi_albert_graph(n_players, m = 3, seed=seed)
 
 for i_round in range(n_rounds):
     # Play one round

@@ -30,10 +30,10 @@ class LinkedPlotter:
         # Plot graph, nodes are color-coded
         colors = [curve[1][-1] for curve in self.curves]
         sizes = [graph.degree(i)*10 for i in range(graph.order())]
-        #Plots nodes in a circle: specially good for the small-world but also looks good for scale-free
+        # Plots nodes in a circle: specially good for the small-world but also looks good for scale-free
         nx.draw_circular(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
-        #Plots nodes so that the graph is visualized better and sometimes can be good for indentifying clusters
-        #nx.draw_kamada_kawai(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+        # Plots nodes so that the graph is visualized better and sometimes can be good for identifying clusters
+        # nx.draw_kamada_kawai(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
 
 
         # Plot curves
@@ -43,6 +43,8 @@ class LinkedPlotter:
             self.lines.append(line)
         n_sim_steps = len(self.curves[0][0])
         self.ax_curves.set_xlim([-0.1, n_sim_steps-1])
+
+
 
         # Save current curves colors and zorders for later 'hover off' update
         self.colors = []

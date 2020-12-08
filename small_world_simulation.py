@@ -71,4 +71,30 @@ plt.grid()
 
 # Plot
 linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig)
+
+
+# Plot scatter of contributions and avg. in a different figure
+fig2, ax2 = plt.subplots(ncols=2, figsize=(15, 6))
+ax2[0].set_title('Contribution vs connectivity')
+ax2[0].set_xlabel('Degree')
+ax2[0].set_ylabel('Contributions')
+# This is for you John
+ax2[1].set_title('Avg. contribution over time')
+ax2[1].set_xlabel('Round number')
+plt.grid()
+
+# Plot scatter
+contributions = [y[len(y)-1] for _, y in contribution_curves]
+degree = [graph.degree(i) for i in range(graph.order())]
+min_degree = min(degree)
+max_degree = max(degree)
+ordered_contribs = [[] for i in range(min_degree, max_degree+1)]
+for idx in range(len(degree)):
+    ordered_contribs[degree[idx]-min_degree].append(contributions[idx])
+ax2[0].boxplot(ordered_contribs, positions=range(min_degree, max_degree+1))
+
+
+# Plot avg. contribution
+
+
 plt.show()

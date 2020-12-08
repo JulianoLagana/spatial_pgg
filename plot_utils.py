@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 import numpy as np
 import networkx as nx
+from statistics import mean, stdev
 
 
 class LinkedPlotter:
@@ -20,7 +21,7 @@ class LinkedPlotter:
         ax_graph: The axis in which the graph should be plotted.
         ax_curves: The axis in which the curves should be plotted.
     """
-    def __init__(self, graph, curves, ax_graph, ax_curves, fig):
+    def __init__(self, graph, curves, ax_graph, ax_curves, fig, circle=True):
         plt.subplots_adjust(left=0.25, bottom=0.25)
         self.curves = curves
         self.ax_graph = ax_graph
@@ -30,10 +31,12 @@ class LinkedPlotter:
         # Plot graph, nodes are color-coded
         colors = [curve[1][-1] for curve in self.curves]
         sizes = [graph.degree(i)*10 for i in range(graph.order())]
-        # Plots nodes in a circle: specially good for the small-world but also looks good for scale-free
-        nx.draw_circular(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
-        # Plots nodes so that the graph is visualized better and sometimes can be good for identifying clusters
-        # nx.draw_kamada_kawai(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+        if circle:
+            # Plots nodes in a circle: specially good for the small-world but also looks good for scale-free
+            nx.draw_circular(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+        else:
+            # Plots nodes so that the graph is visualized better and sometimes can be good for identifying clusters
+            nx.draw_kamada_kawai(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
 
 
         # Plot curves
@@ -120,3 +123,53 @@ if __name__ == '__main__':
     f, ax = plt.subplots(nrows=2)
     linked_plotter = LinkedPlotter(G, curves, ax[0], ax[1], f)
     plt.show()
+
+
+def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box_plot=False):
+    """
+    Generates a scatter plot of the mean contribution vs the number of neighbours (with error bars) if box_plot is set
+    to False (default) or a boxplot if it is set to True. And also a plot (with error regions) for the average contribution
+    over time
+
+    Params:
+        graph: Graph to be plotted.
+        contribution_curves: List of contribution curves. Each element is a list [xs, ys], where xs and ys are respectively a list
+        of the x and y coordinates of the points to be plotted.
+        mean_contribs: mean contribution over time (first row) with standard deviation (second row)
+        ax_degree: The axis in which the scatter plot should be plotted.
+        ax_avg: The axis in which the average contribution should be plotted.
+    """
+
+    # Plot scatter
+    contributions = [y[len(y) - 1] for _, y in contribution_curves]
+    degree = [graph.degree(i) for i in range(graph.order())]
+    min_degree = min(degree)
+    max_degree = max(degree)
+    ordered_contribs = [[] for i in range(min_degree, max_degree + 1)]
+    for idx in range(len(degree)):
+        ordered_contribs[degree[idx] - min_degree].append(contributions[idx])
+    if box_plot:
+        ax_degree.boxplot(ordered_contribs, positions=range(min_degree, max_degree + 1))
+    else:
+        mean_contribs_degree = [mean(ordered_contribs[i]) for i in range(max_degree - min_degree + 1)]
+        std_mean_contribs_degree = [stdev(ordered_contribs[i]) / len(ordered_contribs[i])for i in range(max_degree - min_degree + 1)]
+        size_marker = [len(ordered_contribs[i])*5 for i in range(max_degree - min_degree + 1)]
+        ax_degree.scatter(range(min_degree, max_degree + 1), mean_contribs_degree,  s=size_marker)
+        ax_degree.errorbar(range(min_degree, max_degree + 1), mean_contribs_degree, std_mean_contribs_degree,
+                           alpha=0.5, linestyle='--')
+
+
+    # Plot avg. contribution
+    mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 0.3)
+    x = list(range(len(mean_contribs[0, :])))
+    ax_avg.plot(mean_contribs[0, :], color=mean_color)
+    ax_avg.plot(mean_contribs[0, :], color=mean_color)
+    ax_avg.fill_between(x,
+                        (mean_contribs[0, :] + 1 * mean_contribs[1, :]),
+                        (mean_contribs[0, :] - 1 * mean_contribs[1, :]),
+                        color=mean_color, edgecolor=None)
+    ax_avg.fill_between(x,
+                        (mean_contribs[0, :] + 2 * mean_contribs[1, :]),
+                        (mean_contribs[0, :] - 2 * mean_contribs[1, :]),
+                        color=mean_color, edgecolor=None)
+

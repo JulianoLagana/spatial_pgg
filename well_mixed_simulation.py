@@ -45,7 +45,7 @@ for i_round in range(n_rounds):
                                                       noise_intensity)
 
     # Save contributions made this round
-    mean_contribs[:, i_round+1] = [sum(player_strategies) / n_players, stdev(player_strategies)] # for mean plot
+    mean_contribs[:, i_round+1] = [sum(player_strategies) / n_players, stdev(player_strategies) / np.sqrt(n_players)] # for mean plot
     contribs[i_round+1, :] = player_strategies.copy() # Save contributions made this round
 
 # --- Mean plot ---

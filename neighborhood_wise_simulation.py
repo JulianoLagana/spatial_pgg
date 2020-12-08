@@ -6,6 +6,7 @@ from pgg import compute_pgg_neighborhood_wise_payoffs
 from update_strategies import soft_noisy_update_according_to_best_neighbor
 from plot_utils import LinkedPlotter, avgPlotter
 from statistics import stdev
+from read_file_net import read_file_net
 
 
 # Configurations
@@ -30,13 +31,15 @@ noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
 
 # Initializations
+graph, n_players = read_file_net('facebook_net.txt')
+#graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+# graph = nx.barabasi_albert_graph(n_players, m = 3, seed=seed)
 players_money = np.array([starting_money]*n_players)
 player_strategies = np.random.random(size=n_players)*starting_money
 contribs = np.zeros((n_rounds+1, n_players))
 contribs[0, :] = player_strategies.copy()
 mean_contribs = np.zeros((2, n_rounds+1)) # data structure for the mean plot
-graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
-# graph = nx.barabasi_albert_graph(n_players, m = 3, seed=seed)
+
 
 for i_round in range(n_rounds):
     # Play one round

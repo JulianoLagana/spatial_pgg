@@ -5,6 +5,7 @@ import networkx as nx
 from pgg import compute_pgg_neighborhood_wise_payoffs
 from update_strategies import soft_noisy_update_according_to_best_neighbor
 from plot_utils import LinkedPlotter
+from statistics import stdev
 
 
 # Configurations
@@ -33,6 +34,7 @@ players_money = np.array([starting_money]*n_players)
 player_strategies = np.random.random(size=n_players)*starting_money
 contribs = np.zeros((n_rounds+1, n_players))
 contribs[0, :] = player_strategies.copy()
+mean_contribs = np.zeros((2, n_rounds+1)) # data structure for the mean plot
 graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
 # graph = nx.barabasi_albert_graph(n_players, m = 3, seed=seed)
 
@@ -53,8 +55,29 @@ for i_round in range(n_rounds):
                                                       alpha,
                                                       noise_intensity)
 
-    # Save contributions made this round
-    contribs[i_round+1, :] = player_strategies.copy()
+    mean_contribs[:, i_round+1] = [sum(player_strategies) / n_players, stdev(player_strategies)] # for mean plot
+    contribs[i_round+1, :] = player_strategies.copy() # Save contributions made this round
+
+
+# --- Mean plot ---
+plot_mean_contribs = plt.figure(1)
+mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 0.3)
+x = list(range(0, n_rounds+1))
+plt.plot(mean_contribs[0, :], color=mean_color)
+plt.fill_between(x,
+                 (mean_contribs[0, :] + 1 * mean_contribs[1, :]),
+                 (mean_contribs[0, :] - 1 * mean_contribs[1, :]),
+                 color=mean_color)
+plt.fill_between(x,
+                 (mean_contribs[0, :]+2*mean_contribs[1, :]),
+                 (mean_contribs[0, :]-2*mean_contribs[1, :]),
+                 color=mean_color)
+plt.title('Mean contribution over time')
+plt.suptitle('(Mean +/- SD)')
+plt.xlabel('Round number')
+plt.ylabel('Average Contribution')
+plt.grid()
+plot_mean_contribs.show()
 
 # Change the format of the saved contributions for plotting
 xs = [i for i in range(n_rounds+1)]

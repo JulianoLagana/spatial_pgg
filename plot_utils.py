@@ -143,19 +143,26 @@ def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box
     # Plot scatter
     contributions = [y[len(y) - 1] for _, y in contribution_curves]
     degree = [graph.degree(i) for i in range(graph.order())]
+    existing_degrees = [d for d in sorted(set(degree))]
     min_degree = min(degree)
     max_degree = max(degree)
-    ordered_contribs = [[] for i in range(min_degree, max_degree + 1)]
+    ordered_contribs = [[] for i in range(len(existing_degrees))]
     for idx in range(len(degree)):
-        ordered_contribs[degree[idx] - min_degree].append(contributions[idx])
+        ordered_contribs[existing_degrees.index(degree[idx])].append(contributions[idx])
     if box_plot:
-        ax_degree.boxplot(ordered_contribs, positions=range(min_degree, max_degree + 1))
+        ax_degree.boxplot(ordered_contribs, positions=existing_degrees)
     else:
-        mean_contribs_degree = [mean(ordered_contribs[i]) for i in range(max_degree - min_degree + 1)]
-        std_mean_contribs_degree = [stdev(ordered_contribs[i]) / len(ordered_contribs[i])for i in range(max_degree - min_degree + 1)]
-        size_marker = [len(ordered_contribs[i])*5 for i in range(max_degree - min_degree + 1)]
-        ax_degree.scatter(range(min_degree, max_degree + 1), mean_contribs_degree,  s=size_marker)
-        ax_degree.errorbar(range(min_degree, max_degree + 1), mean_contribs_degree, std_mean_contribs_degree,
+        mean_contribs_degree = [mean(ordered_contribs[i]) for i in range(len(existing_degrees))]
+        std_mean_contribs_degree = []
+        for i in range(len(existing_degrees)):
+            if len(ordered_contribs[i]) > 1:
+                std_mean_contribs_degree.append(stdev(ordered_contribs[i]) / np.sqrt(len(ordered_contribs[i])))
+            else:
+                std_mean_contribs_degree.append(0)
+
+        size_marker = [len(ordered_contribs[i])*5 for i in range(len(existing_degrees))]
+        ax_degree.scatter(existing_degrees, mean_contribs_degree,  s=size_marker)
+        ax_degree.errorbar(existing_degrees, mean_contribs_degree, std_mean_contribs_degree,
                            alpha=0.5, linestyle='--')
 
 

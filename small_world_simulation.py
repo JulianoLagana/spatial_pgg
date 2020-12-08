@@ -80,7 +80,7 @@ linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, ci
 fig2, ax2 = plt.subplots(ncols=2, figsize=(15, 6))
 ax2[0].set_title('Contribution vs connectivity')
 ax2[0].set_xlabel('Degree')
-ax2[0].set_ylabel('Contributions')
+ax2[0].set_ylabel('Average contribution')
 ax2[1].set_title('Mean contribution over time (+/-SD)')
 ax2[1].set_xlabel('Round number')
 

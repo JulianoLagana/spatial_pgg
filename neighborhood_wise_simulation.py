@@ -59,25 +59,6 @@ for i_round in range(n_rounds):
     contribs[i_round+1, :] = player_strategies.copy() # Save contributions made this round
 
 
-# --- Mean plot ---
-plot_mean_contribs = plt.figure(1)
-mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 0.3)
-x = list(range(0, n_rounds+1))
-plt.plot(mean_contribs[0, :], color=mean_color)
-plt.fill_between(x,
-                 (mean_contribs[0, :] + 1 * mean_contribs[1, :]),
-                 (mean_contribs[0, :] - 1 * mean_contribs[1, :]),
-                 color=mean_color)
-plt.fill_between(x,
-                 (mean_contribs[0, :]+2*mean_contribs[1, :]),
-                 (mean_contribs[0, :]-2*mean_contribs[1, :]),
-                 color=mean_color)
-plt.title('Mean contribution over time')
-plt.suptitle('(Mean +/- SD)')
-plt.xlabel('Round number')
-plt.ylabel('Average Contribution')
-plt.grid()
-plot_mean_contribs.show()
 
 # Change the format of the saved contributions for plotting
 xs = [i for i in range(n_rounds+1)]
@@ -103,7 +84,7 @@ ax2[0].set_title('Contribution vs connectivity')
 ax2[0].set_xlabel('Degree')
 ax2[0].set_ylabel('Contributions')
 # This is for you John
-ax2[1].set_title('Avg. contribution over time')
+ax2[1].set_title('Mean contribution over time (+/-SD)')
 ax2[1].set_xlabel('Round number')
 plt.grid()
 
@@ -116,9 +97,18 @@ ordered_contribs = [[] for i in range(min_degree, max_degree+1)]
 for idx in range(len(degree)):
     ordered_contribs[degree[idx]-min_degree].append(contributions[idx])
 ax2[0].boxplot(ordered_contribs, positions=range(min_degree, max_degree+1))
-
-
 # Plot avg. contribution
-
+mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 0.3)
+x = list(range(0, n_rounds+1))
+ax2[1].plot(mean_contribs[0, :], color=mean_color)
+ax2[1].plot(mean_contribs[0, :], color=mean_color)
+ax2[1].fill_between(x,
+                 (mean_contribs[0, :] + 1 * mean_contribs[1, :]),
+                 (mean_contribs[0, :] - 1 * mean_contribs[1, :]),
+                 color=mean_color)
+ax2[1].fill_between(x,
+                 (mean_contribs[0, :]+2*mean_contribs[1, :]),
+                 (mean_contribs[0, :]-2*mean_contribs[1, :]),
+                 color=mean_color)
 
 plt.show()

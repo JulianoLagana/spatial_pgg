@@ -57,8 +57,7 @@ plt.fill_between(x,
                  (mean_contribs[0, :]+2*mean_contribs[1, :]),
                  (mean_contribs[0, :]-2*mean_contribs[1, :]),
                  color=mean_color)
-plt.title('Mean contribution over time')
-plt.suptitle('(Mean +/- 2SD)')
+plt.title('Mean contribution over time (+/- 2SD)')
 plt.xlabel('Round number')
 plt.ylabel('Average Contribution')
 plt.grid()

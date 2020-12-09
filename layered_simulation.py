@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 from pgg import compute_pgg_layered_payoffs
-from update_strategies import soft_noisy_update_best_neighborhood
+from update_strategies import soft_noisy_update_according_to_best_neighbor
 from plot_utils import LinkedPlotter
 
 
@@ -21,28 +21,31 @@ else:
 n_players = 100
 starting_money = 100
 mult_factor = 3
-n_rounds = 40
+n_rounds = 100
 connectivity = 4
 prob_new_edge = 0.3
 alpha = 0.5
 noise_intensity = 1
-update_strategy = soft_noisy_update_best_neighborhood
+gamma = 1
+update_strategy = soft_noisy_update_according_to_best_neighbor
 
 # Initializations
 players_money = np.array([starting_money]*n_players)
-player_strategies = np.random.random(size=n_players)*starting_money
+player_strategies = np.random.uniform(0.4, 1, size=n_players)*starting_money
 contribs = np.zeros((n_rounds+1, n_players))
 contribs[0, :] = player_strategies.copy()
 graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
 
 players = np.array(list(graph.nodes))
-countries = np.array_split(players, n_players//30)
+# Change number of countries
+countries = np.array_split(players, 1)
 
-print(nx.graph_number_of_cliques(graph))
 
 for i_round in range(n_rounds):
     # Play one round
     payoffs = compute_pgg_layered_payoffs(graph, players_money, player_strategies, mult_factor, countries)
+    # Change utility of players to incorporate average friends pay-off
+    payoffs = [payoffs[i] + (gamma * np.min(payoffs[list(graph.adj[i])])) for i in range(len(player_strategies))]
 
     # Update the players strategies
     for i_player in range(len(player_strategies)):
@@ -75,5 +78,5 @@ ax[1].set_ylabel('Contributions')
 plt.grid()
 
 # Plot
-linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, country=countries)
+linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=False, country=countries)
 plt.show()

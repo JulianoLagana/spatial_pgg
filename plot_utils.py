@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
 import numpy as np
 import networkx as nx
+import string
+
 
 
 class LinkedPlotter:
@@ -20,7 +22,7 @@ class LinkedPlotter:
         ax_graph: The axis in which the graph should be plotted.
         ax_curves: The axis in which the curves should be plotted.
     """
-    def __init__(self, graph, curves, ax_graph, ax_curves, fig):
+    def __init__(self, graph, curves, ax_graph, ax_curves, fig, country=None):
         plt.subplots_adjust(left=0.25, bottom=0.25)
         self.curves = curves
         self.ax_graph = ax_graph
@@ -29,7 +31,19 @@ class LinkedPlotter:
 
         # Plot graph, nodes are color-coded
         colors = [curve[1][-1] for curve in self.curves]
-        nx.draw_networkx(graph, with_labels=True, ax=ax_graph, node_color=colors, vmin=0, vmax=100)
+        labeled = True
+        if country != None:
+            assert len(list(string.ascii_lowercase)) >= len(country), 'More countries than letters in the alphabet'
+            mapping = {}
+            labeled = False
+            for a, letter in zip(country, list(string.ascii_lowercase)[:len(country)]):
+                for i in a:
+                    mapping[i] = letter
+        pos = nx.circular_layout(graph)
+        nx.draw_networkx(graph, with_labels=labeled, ax=ax_graph, node_color=colors, vmin=0, vmax=100, pos=pos)
+        
+        if not labeled:
+            nx.draw_networkx_labels(graph, labels=mapping, ax=ax_graph, pos=pos)
 
         # Plot curves
         self.lines = []

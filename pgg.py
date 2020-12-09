@@ -28,6 +28,17 @@ def compute_pgg_neighborhood_wise_payoffs(graph: networkx.classes.graph.Graph, p
     return payoffs
 
 
+def compute_pgg_layered_payoffs(graph: networkx.classes.graph.Graph, players_money: np.ndarray,
+                                          players_stratategies: np.ndarray, mult_factor: float, countries: np.ndarray) -> np.ndarray:
+    n_players = len(graph.nodes)
+    payoffs = np.zeros((n_players,))
+    for subgame_players in countries:
+        subgame_moneys = players_money[subgame_players]
+        subgame_strategies = players_stratategies[subgame_players]
+        payoffs[subgame_players] = compute_pgg_payoffs(subgame_moneys, subgame_strategies, mult_factor)
+    return payoffs
+
+
 # Example usage
 if __name__ == '__main__':
     players_money = np.array([100, 100, 100])

@@ -38,7 +38,10 @@ players_money = np.array([starting_money]*n_players)
 player_strategies = np.random.random(size=n_players)*starting_money
 contribs = np.zeros((n_rounds+1, n_players))
 contribs[0, :] = player_strategies.copy()
-mean_contribs = np.zeros((2, n_rounds+1)) # data structure for the mean plot
+mean_contribs = np.zeros((3, n_rounds+1)) # data structure for the mean plot
+mean_contribs[:, 0] = [np.median(player_strategies),
+                       np.percentile(player_strategies, 25),
+                       np.percentile(player_strategies, 75)]
 
 
 for i_round in range(n_rounds):
@@ -58,7 +61,9 @@ for i_round in range(n_rounds):
                                                       alpha,
                                                       noise_intensity)
 
-    mean_contribs[:, i_round+1] = [sum(player_strategies) / n_players, stdev(player_strategies)/np.sqrt(n_players)] # for mean plot
+    mean_contribs[:, i_round+1] = [np.median(player_strategies),
+                                 np.percentile(player_strategies, 25),
+                                 np.percentile(player_strategies, 75)] # for mean plot
     contribs[i_round+1, :] = player_strategies.copy() # Save contributions made this round
 
 
@@ -86,7 +91,7 @@ fig2, ax2 = plt.subplots(ncols=2, figsize=(15, 6))
 ax2[0].set_title('Contribution vs connectivity')
 ax2[0].set_xlabel('Degree')
 ax2[0].set_ylabel('Average contribution')
-ax2[1].set_title('Mean contribution over time (+/-SD)')
+ax2[1].set_title('Median contribution over time (quart. percentiles)')
 ax2[1].set_xlabel('Round number')
 
 # Plot average contribution vs degree and average contribution level

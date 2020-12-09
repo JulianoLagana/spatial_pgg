@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
 import numpy as np
 import networkx as nx
 import string
 
+from matplotlib.widgets import Slider
+from statistics import mean, stdev
 
 
 class LinkedPlotter:
@@ -22,7 +23,7 @@ class LinkedPlotter:
         ax_graph: The axis in which the graph should be plotted.
         ax_curves: The axis in which the curves should be plotted.
     """
-    def __init__(self, graph, curves, ax_graph, ax_curves, fig, country=None):
+    def __init__(self, graph, curves, ax_graph, ax_curves, fig, circle=True, country=None):
         plt.subplots_adjust(left=0.25, bottom=0.25)
         self.curves = curves
         self.ax_graph = ax_graph
@@ -31,19 +32,27 @@ class LinkedPlotter:
 
         # Plot graph, nodes are color-coded
         colors = [curve[1][-1] for curve in self.curves]
-        labeled = True
+
         if country != None:
+            # Plot country as letters
             assert len(list(string.ascii_lowercase)) >= len(country), 'More countries than letters in the alphabet'
             mapping = {}
             labeled = False
             for a, letter in zip(country, list(string.ascii_lowercase)[:len(country)]):
                 for i in a:
                     mapping[i] = letter
-        pos = nx.circular_layout(graph)
-        nx.draw_networkx(graph, with_labels=labeled, ax=ax_graph, node_color=colors, vmin=0, vmax=100, pos=pos)
-        
-        if not labeled:
+            pos = nx.circular_layout(graph)
+            nx.draw_networkx(graph, with_labels=labeled, ax=ax_graph, node_color=colors, vmin=0, vmax=100, pos=pos)
             nx.draw_networkx_labels(graph, labels=mapping, ax=ax_graph, pos=pos)
+            
+        sizes = [graph.degree(i)*10 for i in range(graph.order())]
+        if circle:
+            # Plots nodes in a circle: specially good for the small-world but also looks good for scale-free
+            nx.draw_circular(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+        elif country == None:
+            # Plots nodes so that the graph is visualized better and sometimes can be good for identifying clusters
+            nx.draw_kamada_kawai(graph, with_labels=False, ax=ax_graph, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+
 
         # Plot curves
         self.lines = []
@@ -52,6 +61,8 @@ class LinkedPlotter:
             self.lines.append(line)
         n_sim_steps = len(self.curves[0][0])
         self.ax_curves.set_xlim([-0.1, n_sim_steps-1])
+
+
 
         # Save current curves colors and zorders for later 'hover off' update
         self.colors = []
@@ -127,3 +138,54 @@ if __name__ == '__main__':
     f, ax = plt.subplots(nrows=2)
     linked_plotter = LinkedPlotter(G, curves, ax[0], ax[1], f)
     plt.show()
+
+
+def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box_plot=False):
+    """
+    Generates a scatter plot of the mean contribution vs the number of neighbours (with error bars) if box_plot is set
+    to False (default) or a boxplot if it is set to True. And also a plot (with error regions) for the average contribution
+    over time
+
+    Params:
+        graph: Graph to be plotted.
+        contribution_curves: List of contribution curves. Each element is a list [xs, ys], where xs and ys are respectively a list
+        of the x and y coordinates of the points to be plotted.
+        mean_contribs: mean contribution over time (first row) with standard deviation (second row)
+        ax_degree: The axis in which the scatter plot should be plotted.
+        ax_avg: The axis in which the average contribution should be plotted.
+    """
+
+    # Plot scatter
+    contributions = [y[len(y) - 1] for _, y in contribution_curves]
+    degree = [graph.degree(i) for i in range(graph.order())]
+    existing_degrees = [d for d in sorted(set(degree))]
+    min_degree = min(degree)
+    max_degree = max(degree)
+    ordered_contribs = [[] for i in range(len(existing_degrees))]
+    for idx in range(len(degree)):
+        ordered_contribs[existing_degrees.index(degree[idx])].append(contributions[idx])
+    if box_plot:
+        ax_degree.boxplot(ordered_contribs, positions=existing_degrees)
+    else:
+        mean_contribs_degree = [mean(ordered_contribs[i]) for i in range(len(existing_degrees))]
+        std_mean_contribs_degree = []
+        for i in range(len(existing_degrees)):
+            if len(ordered_contribs[i]) > 1:
+                std_mean_contribs_degree.append(stdev(ordered_contribs[i]) / np.sqrt(len(ordered_contribs[i])))
+            else:
+                std_mean_contribs_degree.append(0)
+
+        size_marker = [len(ordered_contribs[i])*5 for i in range(len(existing_degrees))]
+        ax_degree.scatter(existing_degrees, mean_contribs_degree,  s=size_marker)
+        ax_degree.errorbar(existing_degrees, mean_contribs_degree, std_mean_contribs_degree,
+                           alpha=0.5, linestyle='--')
+
+
+    # Plot avg. contribution
+    mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 0.3)
+    x = list(range(len(mean_contribs[0, :])))
+    #ax_avg.plot(mean_contribs[0, :], color=mean_color)
+    ax_avg.plot(mean_contribs[0, :], color=mean_color)
+    plt.fill_between(x, (mean_contribs[1, :]), (mean_contribs[2, :]), color=mean_color, edgecolor=None)
+
+

@@ -14,7 +14,7 @@ if reproducible:
     np.random.seed(seed)
 
 # Hyperparameters for the simulation
-n_players = 10
+n_players = 100
 starting_money = 100
 mult_factor = 1.5
 n_rounds = 30
@@ -25,8 +25,13 @@ update_strategy = soft_noisy_update_according_to_best_neighbor
 # Initializations
 players_money = np.array([starting_money]*n_players)
 player_strategies = np.random.random(size=n_players)*starting_money
+print(player_strategies)
 contribs = np.zeros((n_rounds+1, n_players))
 contribs[0, :] = player_strategies.copy()
+mean_contribs = np.zeros((3, n_rounds+1)) # data structure for the mean plot
+mean_contribs[:, 0] = [np.median(player_strategies),
+                       np.percentile(player_strategies, 25),
+                       np.percentile(player_strategies, 75)]
 
 for i_round in range(n_rounds):
     # Play one round
@@ -43,11 +48,30 @@ for i_round in range(n_rounds):
                                                       noise_intensity)
 
     # Save contributions made this round
-    contribs[i_round+1, :] = player_strategies.copy()
+    mean_contribs[:, i_round+1] = [np.median(player_strategies),
+                                 np.percentile(player_strategies, 25),
+                                 np.percentile(player_strategies, 75)] # for mean plot
+    contribs[i_round+1, :] = player_strategies.copy() # Save contributions made this round
 
+# --- Mean plot ---
+plot_mean_contribs = plt.figure(0)
+mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 0.5)
+x = list(range(len(mean_contribs[0, :])))
+plt.plot(mean_contribs[0, :], color=mean_color)
+plt.fill_between(x, (mean_contribs[1, :]), (mean_contribs[2, :]), color=mean_color, edgecolor=None)
+plt.title('Median contribution over time (quart. percentiles)')
+plt.xlabel('Round number')
+plt.ylabel('Average Contribution')
+plot_mean_contribs.show()
+
+# --- Individuals plot ---
+plot_contribs = plt.figure(1)
 plt.plot(contribs, '.-')
+plt.title('Individual contribution over time')
 plt.xlabel('Round number')
 plt.ylabel('Contributions')
 plt.grid()
-plt.show()
+plot_contribs.show()
+
+input()
 

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from pgg import compute_pgg_neighborhood_wise_payoffs
+from pgg import compute_pgg_neighborhood_wise_payoffs as compute_pgg
 from update_strategies import soft_noisy_update_according_to_best_neighbor
 from plot_utils import LinkedPlotter, avgPlotter
 from statistics import stdev
@@ -46,7 +46,7 @@ mean_contribs[:, 0] = [np.median(player_strategies),
 
 for i_round in range(n_rounds):
     # Play one round
-    payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor)
+    payoffs = compute_pgg(graph, players_money, player_strategies, mult_factor)
 
     # Update the players strategies
     for i_player in range(len(player_strategies)):

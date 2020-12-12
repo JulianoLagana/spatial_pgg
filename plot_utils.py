@@ -195,7 +195,8 @@ def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box
     mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 0.3)
     x = list(range(len(mean_contribs[0, :])))
     #ax_avg.plot(mean_contribs[0, :], color=mean_color)
-    ax_avg.plot(mean_contribs[0, :], color=mean_color)
+    ax_avg.plot(mean_contribs[0, :], color=mean_color, )
     plt.fill_between(x, (mean_contribs[1, :]), (mean_contribs[2, :]), color=mean_color, edgecolor=None)
+    plt.ylim(0, 100);
 
 

@@ -18,7 +18,7 @@ else:
     seed = None
 
 # Hyperparameters for the simulation
-n_players = 100
+n_players = 30
 starting_money = 100
 mult_factor = 1.5
 n_rounds = 30
@@ -27,6 +27,7 @@ prob_new_edge = 0.3
 alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
+save_plots = False
 
 # Initializations
 players_money = np.array([starting_money]*n_players)
@@ -37,7 +38,8 @@ mean_contribs = np.zeros((3, n_rounds+1)) # data structure for the mean plot
 mean_contribs[:, 0] = [np.median(player_strategies),
                        np.percentile(player_strategies, 25),
                        np.percentile(player_strategies, 75)]
-graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+graph = nx.barabasi_albert_graph(n_players, connectivity, seed=seed)
+#graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
 
 for i_round in range(n_rounds):
     # Play one round
@@ -70,25 +72,28 @@ for i_player in range(n_players):
 
 # Create plotting window
 fig, ax = plt.subplots(ncols=2, figsize=(15, 6))
-ax[0].set_title('Graph (hover a node to outline its contribution)')
-ax[1].set_title('Contributions over time')
+ax[0].set_title('P1: Graph (hover a node to outline its contribution)')
+ax[1].set_title('P1: Contributions over time, n='+str(n_players))
 ax[1].set_xlabel('Round number')
 ax[1].set_ylabel('Contributions')
 plt.grid()
 
 # Plot graph and curves
-linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=True)
-
+linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=False)
+if save_plots:
+    fig.savefig('fig/P1_individuals_graph-'+str(n_players)+'.png')
 
 # Plot scatter of contributions and avg. in a different figure
 fig2, ax2 = plt.subplots(ncols=2, figsize=(15, 6))
-ax2[0].set_title('Contribution vs connectivity')
+ax2[0].set_title('P1: Contribution vs connectivity')
 ax2[0].set_xlabel('Degree')
 ax2[0].set_ylabel('Average contribution')
-ax2[1].set_title('Median contribution over time (quart. percentiles)')
+ax2[1].set_title('P1: Median contribution over time (quart. percentiles), n='+str(n_players))
 ax2[1].set_xlabel('Round number')
 
 # Plot average contribution vs degree and average contribution level
 avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1])
+if save_plots:
+    fig2.savefig('fig/P1_median-'+str(n_players)+'.png')
 
 plt.show()

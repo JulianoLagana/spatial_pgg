@@ -20,7 +20,7 @@ else:
     seed = None
 
 # Hyperparameters for the simulation
-n_players = 100
+n_players = 30
 starting_money = 100
 mult_factor = 3
 n_rounds = 10
@@ -29,11 +29,12 @@ prob_new_edge = 0.3
 alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
+save_plots = False
 
 # Initializations
-graph, n_players = read_file_net('facebook_net.txt')
+# graph, n_players = read_file_net('facebook_net.txt')
 # graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
-# graph = nx.barabasi_albert_graph(n_players, m = 3, seed=seed)
+graph = nx.barabasi_albert_graph(n_players, m = 3, seed=seed)
 players_money = np.array([starting_money]*n_players)
 player_strategies = np.random.random(size=n_players)*starting_money
 contribs = np.zeros((n_rounds+1, n_players))
@@ -77,24 +78,27 @@ for i_player in range(n_players):
 # Create plotting window
 fig, ax = plt.subplots(ncols=2, figsize=(15, 6))
 
-ax[0].set_title('Graph (hover a node to outline its contribution)')
-ax[1].set_title('Contributions over time')
+ax[0].set_title('P2: Graph (hover a node to outline its contribution)')
+ax[1].set_title('P2: Contributions over time, n='+str(n_players)+', stoch.='+str(noise_intensity))
 ax[1].set_xlabel('Round number')
 ax[1].set_ylabel('Contributions')
 
 # Plot graph and curves
-linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=True)
-
+linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=False)
+if save_plots:
+    fig.savefig('fig/P2_individuals_graph-'+str(n_players)+'_'+str(noise_intensity)+'.png')
 
 # Plot scatter of contributions and avg. in a different figure
 fig2, ax2 = plt.subplots(ncols=2, figsize=(15, 6))
-ax2[0].set_title('Contribution vs connectivity')
+ax2[0].set_title('P2: Contribution vs connectivity')
 ax2[0].set_xlabel('Degree')
 ax2[0].set_ylabel('Average contribution')
-ax2[1].set_title('Median contribution over time (quart. percentiles)')
+ax2[1].set_title('P2: Median contribution over time (quart. percentiles), n='+str(n_players)+', stoch.='+str(noise_intensity))
 ax2[1].set_xlabel('Round number')
 
 # Plot average contribution vs degree and average contribution level
 avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1])
+if save_plots:
+    fig2.savefig('fig/P2_median-'+str(n_players)+'_'+str(noise_intensity)+'.png')
 
 plt.show()

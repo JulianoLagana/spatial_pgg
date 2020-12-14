@@ -20,14 +20,15 @@ else:
 # Hyperparameters for the simulation
 n_players = 30
 starting_money = 100
-mult_factor = 1.5
+mult_factor = 3
 n_rounds = 30
-connectivity = 4
+connectivity = 6
 prob_new_edge = 0.3
 alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
 save_plots = False
+circle = True
 
 # Initializations
 players_money = np.array([starting_money]*n_players)
@@ -38,8 +39,8 @@ mean_contribs = np.zeros((3, n_rounds+1)) # data structure for the mean plot
 mean_contribs[:, 0] = [np.median(player_strategies),
                        np.percentile(player_strategies, 25),
                        np.percentile(player_strategies, 75)]
-graph = nx.barabasi_albert_graph(n_players, connectivity, seed=seed)
-#graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+# graph = nx.barabasi_albert_graph(n_players, connectivity, seed=seed)
+graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
 
 for i_round in range(n_rounds):
     # Play one round
@@ -50,7 +51,8 @@ for i_round in range(n_rounds):
         neighbor_idxs = list(graph.adj[i_player])
         neighbor_strats = [player_strategies[i] for i in neighbor_idxs]
         neighbor_payoffs = [payoffs[i] for i in neighbor_idxs]
-        player_strategies[i_player] = update_strategy(players_money[i_player],
+        new_player_strategies = np.zeros(shape = n_players)
+        new_player_strategies[i_player] = update_strategy(players_money[i_player],
                                                       player_strategies[i_player],
                                                       payoffs[i_player],
                                                       neighbor_strats,
@@ -58,6 +60,7 @@ for i_round in range(n_rounds):
                                                       alpha,
                                                       noise_intensity)
 
+    player_strategies = new_player_strategies.copy()
     mean_contribs[:, i_round+1] = [np.median(player_strategies),
                                  np.percentile(player_strategies, 25),
                                  np.percentile(player_strategies, 75)] # for mean plot
@@ -79,7 +82,7 @@ ax[1].set_ylabel('Contributions')
 plt.grid()
 
 # Plot graph and curves
-linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=False)
+linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=circle)
 if save_plots:
     fig.savefig('fig/P1_individuals_graph-'+str(n_players)+'.png')
 

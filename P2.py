@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from pgg import compute_pgg_neighborhood_wise_payoffs
+from pgg import compute_pgg_neighborhood_wise_payoffs, compute_pgg_neighborhood_wise_payoffs_old
 from update_strategies import soft_noisy_update_according_to_best_neighbor
 from plot_utils import LinkedPlotter, avgPlotter
 from read_file_net import read_file_net
@@ -38,8 +38,8 @@ num_cores = multiprocessing.cpu_count()
 # Hyperparameters for the simulation
 n_players = 1000
 starting_money = 100
-mult_factor = 0.5
-n_rounds = 10**2
+mult_factor = 4
+n_rounds = 5*10**3
 connectivity = 4
 prob_new_edge = 0.3
 alpha = 0.5
@@ -51,10 +51,18 @@ circle = True
 log_scale = True # For the scatter plot
 size_marker = 0.5
 
+network = 'BA' # 'FB', 'BA' or 'WS'
+
+
 # Initializations
-graph, n_players = read_file_net('facebook_net.txt')
-# graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
-# graph = nx.barabasi_albert_graph(n_players, m = 3, seed=seed)
+if network == 'FB':
+    graph, n_players = read_file_net('facebook_net.txt')
+elif network == 'BA':
+    graph = nx.barabasi_albert_graph(n_players, m=3, seed=seed)
+else:
+    graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+
+# Initializations
 players_money = np.array([starting_money]*n_players)
 player_strategies = np.random.random(size=n_players)*starting_money
 contribs = np.zeros((n_rounds+1, n_players))
@@ -67,7 +75,9 @@ mean_contribs[:, 0] = [np.median(player_strategies),
 
 for i_round in range(n_rounds):
     # Play one round
-    payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor)
+    # payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor)
+    payoffs = compute_pgg_neighborhood_wise_payoffs_old(graph, players_money, player_strategies, mult_factor)
+
 
     # Update the players strategies
     new_player_strategies = Parallel(n_jobs=num_cores)(delayed(parallel_function)(i_player, list(graph.adj[i_player]), player_strategies, payoffs, players_money, alpha, noise_intensity) for i_player in range(len(player_strategies)))

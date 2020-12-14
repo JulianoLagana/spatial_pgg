@@ -38,8 +38,8 @@ num_cores = multiprocessing.cpu_count()
 # Hyperparameters for the simulation
 n_players = 1000
 starting_money = 100
-n_rounds_trans = 100
-n_rounds_avg = 10
+n_rounds_trans = 500
+n_rounds_avg = 50
 connectivity = 4
 prob_new_edge = 0.3
 alpha = 0.5
@@ -50,21 +50,34 @@ plot_graph = False
 circle = True
 log_scale = True # For the scatter plot
 size_marker = 0.5
+network = 'BA' # 'FB', 'BA' or 'WS'
+n_points = 10
 
 
 # Initializations
-graph, n_players = read_file_net('facebook_net.txt')
-# graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
-# graph = nx.barabasi_albert_graph(n_players, m=3, seed=seed)
+if network == 'FB':
+    graph, n_players = read_file_net('facebook_net.txt')
+    mult_factors = np.arange(1, 15.01, 14 / n_points)
+elif network == 'BA':
+    graph = nx.barabasi_albert_graph(n_players, m=3, seed=seed)
+    mult_factors = np.arange(2, 8.01, 6 / n_points)
+else:
+    graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+    mult_factors = np.arange(1, 8.01, 6 / n_points)
 
 mean_degree = sum([graph.degree(i) for i in range(graph.order())])/n_players
-print('Mean degree = {:.2}'.format(mean_degree))
+print('Mean degree = {:d}'.format(int(mean_degree)))
 
-mult_factors = np.arange(0.01*(mean_degree + 1), 0.5*mean_degree + 1.01, 0.5*(mean_degree+1)/10)
+# mult_factors = np.arange(0.01*(mean_degree + 1), 0.5*mean_degree + 1.01, 0.5*(mean_degree+1)/10)
 
 players_money = np.array([starting_money]*n_players)
 initial_player_strategies = np.random.random(size=n_players)*starting_money
 avg_median_contribs = np.zeros((len(mult_factors)))
+
+# Plot scatter of contributions and avg. in a different figure
+plt.figure(figsize=(7, 6))
+plt.ylabel('Average contribution')
+plt.xlabel('Round number')
 
 index = 0
 for mult_factor in list(mult_factors):
@@ -103,23 +116,17 @@ for mult_factor in list(mult_factors):
         avg_median_contribs[index] += median_aux
     avg_median_contribs[index] /= n_rounds_avg
 
-
-
-    # Plot scatter of contributions and avg. in a different figure
-    plt.figure(figsize=(7, 6))
-    plt.ylabel('Average contribution')
-    plt.title('r = {:.2f}'.format(mult_factor))
-    plt.xlabel('Round number')
-
     # Plot avg. contribution
-    mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 0.3)
+    mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 1)
     x = list(range(len(mean_contribs[0, :])))
-    plt.plot(mean_contribs[0, :], color=mean_color, )
-    plt.fill_between(x, (mean_contribs[1, :]), (mean_contribs[2, :]), color=mean_color, edgecolor=None)
+    # plt.plot(mean_contribs[0, :], color=mean_color, label='r = {:.2f}'.format(mult_factor))
+    plt.plot(mean_contribs[0, :], label='r = {:.2f}'.format(mult_factor))
+    # plt.fill_between(x, (mean_contribs[1, :]), (mean_contribs[2, :]), color=mean_color, edgecolor=None)
     plt.ylim(0, 100)
 
-
     index += 1
+
+plt.legend()
 
 plt.figure(figsize=(7, 6))
 plt.ylabel('Average contribution')

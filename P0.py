@@ -17,7 +17,7 @@ if reproducible:
 n_players = 30
 starting_money = 100
 mult_factor = 1.5
-n_rounds = 30
+n_rounds = 100
 alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
@@ -38,14 +38,16 @@ for i_round in range(n_rounds):
     payoffs = compute_pgg_payoffs(players_money, player_strategies, mult_factor)
 
     # Update the players strategies
+    new_player_strategies = np.zeros(n_players)
     for i_player in range(len(player_strategies)):
-        player_strategies[i_player] = update_strategy(players_money[i_player],
+        new_player_strategies[i_player] = update_strategy(players_money[i_player],
                                                       player_strategies[i_player],
                                                       payoffs[i_player],
                                                       player_strategies,
                                                       payoffs,
                                                       alpha,
                                                       noise_intensity)
+    player_strategies = np.copy(new_player_strategies)
 
     # Save contributions made this round
     mean_contribs[:, i_round+1] = [np.median(player_strategies),

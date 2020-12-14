@@ -30,6 +30,9 @@ alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
 save_plots = False
+log_scale = True
+circle = True
+size_marker = 0.5
 
 # Initializations
 # graph, n_players = read_file_net('facebook_net.txt')
@@ -84,7 +87,7 @@ ax[1].set_xlabel('Round number')
 ax[1].set_ylabel('Contributions')
 
 # Plot graph and curves
-linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=False)
+linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=circle)
 if save_plots:
     fig.savefig('fig/P2_individuals_graph-'+str(n_players)+'_'+str(noise_intensity)+'.png')
 
@@ -97,7 +100,7 @@ ax2[1].set_title('P2: Median contribution over time (quart. percentiles), n='+st
 ax2[1].set_xlabel('Round number')
 
 # Plot average contribution vs degree and average contribution level
-avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1])
+avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1], log_scale=log_scale, size_marker=size_marker)
 if save_plots:
     fig2.savefig('fig/P2_median-'+str(n_players)+'_'+str(noise_intensity)+'.png')
 

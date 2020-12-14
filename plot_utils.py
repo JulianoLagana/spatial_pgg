@@ -140,7 +140,7 @@ if __name__ == '__main__':
     plt.show()
 
 
-def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box_plot=False, median=True):
+def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box_plot=False, median=True, log_scale=True, size_marker=5):
     """
     Generates a scatter plot of the mean contribution vs the number of neighbours (with error bars) if box_plot is set
     to False (default) or a boxplot if it is set to True. And also a plot (with error regions) for the average contribution
@@ -172,7 +172,7 @@ def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box
         error_bars[0, :] = [median_contribs_degree[i] - np.percentile(ordered_contribs[i], 25) for i in range(len(existing_degrees))]
         error_bars[1, :] = [np.percentile(ordered_contribs[i], 75) - median_contribs_degree[i] for i in range(len(existing_degrees))]
 
-        size_marker = [len(ordered_contribs[i]) * 5 for i in range(len(existing_degrees))]
+        size_marker = [len(ordered_contribs[i]) * size_marker for i in range(len(existing_degrees))]
         ax_degree.scatter(existing_degrees, median_contribs_degree, s=size_marker)
         ax_degree.errorbar(existing_degrees, median_contribs_degree, error_bars,
                            alpha=0.5, linestyle='--')
@@ -185,10 +185,13 @@ def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box
             else:
                 std_mean_contribs_degree.append(0)
 
-        size_marker = [len(ordered_contribs[i])*5 for i in range(len(existing_degrees))]
+        size_marker = [len(ordered_contribs[i])*size_marker for i in range(len(existing_degrees))]
         ax_degree.scatter(existing_degrees, mean_contribs_degree,  s=size_marker)
         ax_degree.errorbar(existing_degrees, mean_contribs_degree, std_mean_contribs_degree,
                            alpha=0.5, linestyle='--')
+
+    if log_scale:
+        ax_degree.set_xscale('log')
 
 
     # Plot avg. contribution

@@ -14,12 +14,12 @@ def parallel_function(i_player, neighbor_idxs, player_strategies, payoffs, playe
     neighbor_strats = [player_strategies[i] for i in neighbor_idxs]
     neighbor_payoffs = [payoffs[i] for i in neighbor_idxs]
     new_player_strategy = update_strategy(players_money[i_player],
-                                                  player_strategies[i_player],
-                                                  payoffs[i_player],
-                                                  neighbor_strats,
-                                                  neighbor_payoffs,
-                                                  alpha,
-                                                  noise_intensity)
+                                          player_strategies[i_player],
+                                          payoffs[i_player],
+                                          neighbor_strats,
+                                          neighbor_payoffs,
+                                          alpha,
+                                          noise_intensity)
     return new_player_strategy
 
 
@@ -38,19 +38,23 @@ num_cores = multiprocessing.cpu_count()
 # Hyperparameters for the simulation
 n_players = 1000
 starting_money = 100
-mult_factor = 3
-n_rounds = 10**5
+mult_factor = 0.5
+n_rounds = 10**1
 connectivity = 4
-prob_new_edge = 0.1
+prob_new_edge = 0.3
 alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
 save_plots = False
 plot_graph = False
+per_player = True
+circle = True
+log_scale = True # For the scatter plot
+size_marker = 0.5
 
 # Initializations
-# graph, n_players = read_file_net('facebook_net.txt')
-graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+graph, n_players = read_file_net('facebook_net.txt')
+# graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
 # graph = nx.barabasi_albert_graph(n_players, m = 3, seed=seed)
 players_money = np.array([starting_money]*n_players)
 player_strategies = np.random.random(size=n_players)*starting_money
@@ -64,7 +68,7 @@ mean_contribs[:, 0] = [np.median(player_strategies),
 
 for i_round in range(n_rounds):
     # Play one round
-    payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor)
+    payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor, per_player=per_player)
 
     # Update the players strategies
     new_player_strategies = Parallel(n_jobs=num_cores)(delayed(parallel_function)(i_player, list(graph.adj[i_player]), player_strategies, payoffs, players_money, alpha, noise_intensity) for i_player in range(len(player_strategies)))
@@ -82,19 +86,19 @@ contribution_curves = []
 for i_player in range(n_players):
     contribution_curves.append([xs, contribs[:, i_player]])
 
-# Create plotting window
-fig, ax = plt.subplots(ncols=2, figsize=(15, 6))
-
-ax[0].set_title('P2: Graph (hover a node to outline its contribution)')
-ax[1].set_title('P2: Contributions over time, n='+str(n_players)+', stoch.='+str(noise_intensity))
-ax[1].set_xlabel('Round number')
-ax[1].set_ylabel('Contributions')
-
-# Plot graph and curves
 if plot_graph:
-    linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=True)
-if save_plots:
-    fig.savefig('fig/P2_individuals_graph-'+str(n_players)+'_'+str(noise_intensity)+'.png')
+    # Create plotting window
+    fig, ax = plt.subplots(ncols=2, figsize=(15, 6))
+
+    ax[0].set_title('P2: Graph (hover a node to outline its contribution)')
+    ax[1].set_title('P2: Contributions over time, n='+str(n_players)+', stoch.='+str(noise_intensity))
+    ax[1].set_xlabel('Round number')
+    ax[1].set_ylabel('Contributions')
+
+    # Plot graph and curves
+    linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=circle)
+    if save_plots:
+        fig.savefig('fig/P2_individuals_graph-'+str(n_players)+'_'+str(noise_intensity)+'.png')
 
 # Plot scatter of contributions and avg. in a different figure
 fig2, ax2 = plt.subplots(ncols=2, figsize=(15, 6))
@@ -105,7 +109,7 @@ ax2[1].set_title('P2: Median contribution over time (quart. percentiles), n='+st
 ax2[1].set_xlabel('Round number')
 
 # Plot average contribution vs degree and average contribution level
-avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1])
+avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1], log_scale=log_scale, size_marker=size_marker)
 if save_plots:
     fig2.savefig('fig/P2_median-'+str(n_players)+'_'+str(noise_intensity)+'.png')
 

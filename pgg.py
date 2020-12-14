@@ -15,12 +15,8 @@ def compute_pgg_payoffs(players_money: np.ndarray, contributions: np.ndarray, mu
     return divvy - contributions
 
 
-def compute_pgg_neighborhood_wise_payoffs_old(graph: networkx.classes.graph.Graph, players_money: np.ndarray,
-                                              players_stratategies: np.ndarray, mult_factor: float) -> np.ndarray:
-    """
-    This function computes the payoffs for each player in our old formulation of the graph-PGG. Each player gets as
-    final payoff only the payoff that it received when playing the PGG centered in it.
-    """
+def compute_pgg_neighborhood_wise_payoffs(graph: networkx.classes.graph.Graph, players_money: np.ndarray,
+                                          players_stratategies: np.ndarray, mult_factor: float, per_player=False) -> np.ndarray:
     n_players = len(graph.nodes)
     payoffs = np.zeros((n_players,))
     for i_player in list(graph.nodes):
@@ -28,32 +24,12 @@ def compute_pgg_neighborhood_wise_payoffs_old(graph: networkx.classes.graph.Grap
         subgame_players = neigh_idxs + [i_player]
         subgame_moneys = players_money[subgame_players]
         subgame_strategies = players_stratategies[subgame_players]
-        payoffs[i_player] = compute_pgg_payoffs(subgame_moneys, subgame_strategies, mult_factor)[-1]
+        if per_player:
+            mult_factor_aux = mult_factor*len(subgame_players)
+        else:
+            mult_factor_aux = mult_factor
+        payoffs[i_player] = compute_pgg_payoffs(subgame_moneys, subgame_strategies, mult_factor_aux)[-1]
     return payoffs
-
-
-def compute_pgg_neighborhood_wise_payoffs(graph: networkx.classes.graph.Graph, players_money: np.ndarray,
-                                          players_strategies: np.ndarray, mult_factor: float) -> np.ndarray:
-    """
-    This function computes the payoffs for each player in the graph-PGG. Each player gets as final payoff the average
-    payoff it received across all PGGs it played in the graph.
-    """
-    n_players = len(graph.nodes)
-    payoffs = np.zeros(n_players)
-    connectivities = np.zeros(n_players)
-
-    for i_player in list(graph.nodes):
-        neigh_idxs = list(graph.adj[i_player])
-        connectivities[i_player] = len(neigh_idxs)
-        subgame_players = neigh_idxs + [i_player]
-        subgame_moneys = players_money[subgame_players]
-        subgame_strategies = players_strategies[subgame_players]
-
-        # Play the PGG game centered at this node and distribute the payoffs to all participants
-        subgame_payoffs = compute_pgg_payoffs(subgame_moneys, subgame_strategies, mult_factor)
-        payoffs[subgame_players] += subgame_payoffs
-
-    return payoffs/connectivities
 
 
 def compute_pgg_layered_payoffs(graph: networkx.classes.graph.Graph, players_money: np.ndarray,

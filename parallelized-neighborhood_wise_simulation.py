@@ -39,7 +39,7 @@ num_cores = multiprocessing.cpu_count()
 n_players = 1000
 starting_money = 100
 mult_factor = 0.5
-n_rounds = 10**1
+n_rounds = 10**2
 connectivity = 4
 prob_new_edge = 0.3
 alpha = 0.5
@@ -47,7 +47,6 @@ noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
 save_plots = False
 plot_graph = False
-per_player = True
 circle = True
 log_scale = True # For the scatter plot
 size_marker = 0.5
@@ -68,7 +67,7 @@ mean_contribs[:, 0] = [np.median(player_strategies),
 
 for i_round in range(n_rounds):
     # Play one round
-    payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor, per_player=per_player)
+    payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor)
 
     # Update the players strategies
     new_player_strategies = Parallel(n_jobs=num_cores)(delayed(parallel_function)(i_player, list(graph.adj[i_player]), player_strategies, payoffs, players_money, alpha, noise_intensity) for i_player in range(len(player_strategies)))

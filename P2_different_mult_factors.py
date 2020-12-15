@@ -4,7 +4,6 @@ import networkx as nx
 
 from pgg import compute_pgg_neighborhood_wise_payoffs
 from update_strategies import soft_noisy_update_according_to_best_neighbor
-from plot_utils import LinkedPlotter, avgPlotter
 from read_file_net import read_file_net
 import multiprocessing
 from joblib import Parallel, delayed
@@ -98,8 +97,8 @@ for mult_factor in list(mult_factors):
         new_player_strategies = Parallel(n_jobs=num_cores)(delayed(parallel_function)(i_player, list(graph.adj[i_player]), player_strategies, payoffs, players_money, alpha, noise_intensity) for i_player in range(len(player_strategies)))
         player_strategies = np.array(new_player_strategies)
         mean_contribs[:, i_round+1] = [np.median(player_strategies),
-                                     np.percentile(player_strategies, 25),
-                                     np.percentile(player_strategies, 75)] # for mean plot
+                                       np.percentile(player_strategies, 25),
+                                       np.percentile(player_strategies, 75)] # for mean plot
 
 
     for i_round in range(n_rounds_avg):
@@ -111,8 +110,8 @@ for mult_factor in list(mult_factors):
         player_strategies = np.array(new_player_strategies)
         median_aux = np.median(player_strategies)
         mean_contribs[:, i_round+n_rounds_trans+1] = [median_aux,
-                                     np.percentile(player_strategies, 25),
-                                     np.percentile(player_strategies, 75)] # for mean plot
+                                                      np.percentile(player_strategies, 25),
+                                                      np.percentile(player_strategies, 75)] # for mean plot
         avg_median_contribs[index] += median_aux
     avg_median_contribs[index] /= n_rounds_avg
 

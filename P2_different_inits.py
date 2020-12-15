@@ -40,7 +40,7 @@ num_cores = multiprocessing.cpu_count()
 # Hyperparameters for the simulation
 n_players = 100
 starting_money = 100
-n_rounds_trans = 20
+n_rounds_trans = 25
 n_rounds_avg = 5
 connectivity = 4
 prob_new_edge = 0.3
@@ -51,9 +51,9 @@ save_plots = False
 plot_graph = False
 circle = True
 log_scale = True # For the scatter plot
-size_marker = 0.5
-network = 'BA' # 'FB', 'BA' or 'WS'
-n_inits = 2
+size_marker = 0.1
+network = 'FB' # 'FB', 'BA' or 'WS'
+n_inits = 5
 mult_factor = 5
 
 
@@ -71,22 +71,28 @@ print('Mean degree = {:d}'.format(int(mean_degree)))
 
 avg_median_contribs = np.zeros(n_inits)
 
-mean_contribs = np.zeros((n_inits,3, n_rounds_trans + n_rounds_avg + 1)) # data structure for the mean plot
+mean_contribs = np.zeros((n_inits, 3, n_rounds_trans + n_rounds_avg + 1)) # data structure for the mean plot
+contribution_player = np.zeros((n_inits*n_rounds_avg, n_players))
 
 # Plot scatter of contributions and avg. in a different figure
 plt.figure(figsize=(7, 6))
-plt.ylabel('Average contribution')
+plt.title(network)
+plt.ylabel('Median contribution')
 plt.xlabel('Round number')
 
+
+index_avg = 0
 for index in range(n_inits):
-    print(index)
+    print('Init: {:d}'.format(index))
     players_money = np.array([starting_money] * n_players)
     player_strategies = np.random.random(size=n_players) * starting_money
 
 
     mean_contribs[index, :, 0] = [np.median(player_strategies),
-                           np.percentile(player_strategies, 25),
-                           np.percentile(player_strategies, 75)]
+                                  np.percentile(player_strategies, 25),
+                                  np.percentile(player_strategies, 75)]
+
+
 
     for i_round in range(n_rounds_trans):
         # Play one round
@@ -95,6 +101,7 @@ for index in range(n_inits):
         # Update the players strategies
         new_player_strategies = Parallel(n_jobs=num_cores)(delayed(parallel_function)(i_player, list(graph.adj[i_player]), player_strategies, payoffs, players_money, alpha, noise_intensity) for i_player in range(len(player_strategies)))
         player_strategies = np.array(new_player_strategies)
+
         mean_contribs[index, :, i_round+1] = [np.median(player_strategies),
                                      np.percentile(player_strategies, 25),
                                      np.percentile(player_strategies, 75)] # for mean plot
@@ -108,9 +115,13 @@ for index in range(n_inits):
         player_strategies = np.array(new_player_strategies)
         median_aux = np.median(player_strategies)
         mean_contribs[index, :, i_round+n_rounds_trans+1] = [median_aux,
-                                     np.percentile(player_strategies, 25),
-                                     np.percentile(player_strategies, 75)] # for mean plot
+                                                             np.percentile(player_strategies, 25),
+                                                             np.percentile(player_strategies, 75)] # for mean plot
         avg_median_contribs[index] += median_aux
+
+        contribution_player[index_avg, :] = np.copy(player_strategies)
+        index_avg += 1
+
     avg_median_contribs[index] /= n_rounds_avg
 
     # Plot avg. contribution
@@ -122,27 +133,32 @@ for index in range(n_inits):
     plt.ylim(0, 100)
 
 
+
 plt.legend()
 
-# Plot scatter avg contrib vs egree
-plt.figure(figsize=(6, 6))
+# Plot scatter avg contrib vs degree
+plt.figure(figsize=(7, 6))
+plt.title(network)
+plt.xlabel('Degree')
+plt.ylabel('Median contribution')
+if log_scale:
+    plt.xscale('log')
 degree = [graph.degree(i) for i in range(graph.order())]
 existing_degrees = [d for d in sorted(set(degree))]
 
-mean_contribs_player = np.median(mean_contribs[:, 0, :], axis=0) ####
-print(np.size(mean_contribs))
+
 ordered_contribs = [[] for i in range(len(existing_degrees))]
-for idx in range(len(degree)):
-    ordered_contribs[existing_degrees.index(degree[idx])].append(mean_contribs_player[idx])
+for iter_index in range(n_inits*n_rounds_avg):
+    for idx in range(len(degree)):
+        ordered_contribs[existing_degrees.index(degree[idx])].append(contribution_player[iter_index, idx])
 
 median_contribs_degree = [np.median(ordered_contribs[i]) for i in range(len(existing_degrees))]
 error_bars = np.zeros((2, len(existing_degrees)))
 error_bars[0, :] = [median_contribs_degree[i] - np.percentile(ordered_contribs[i], 25) for i in range(len(existing_degrees))]
 error_bars[1, :] = [np.percentile(ordered_contribs[i], 75) - median_contribs_degree[i] for i in range(len(existing_degrees))]
 
-size_marker = [len(ordered_contribs[i]) * size_marker for i in range(len(existing_degrees))]
-plt.scatter(existing_degrees, median_contribs_degree, s=size_marker)
-plt.errorbar(existing_degrees, median_contribs_degree, error_bars,
-                   alpha=0.5, linestyle='--')
+size_markers = [len(ordered_contribs[i]) * size_marker for i in range(len(existing_degrees))]
+plt.scatter(existing_degrees, median_contribs_degree, s=size_markers)
+plt.errorbar(existing_degrees, median_contribs_degree, error_bars, alpha=0.5, linestyle='--')
 
 plt.show()

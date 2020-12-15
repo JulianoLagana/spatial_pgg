@@ -47,18 +47,18 @@ for i_round in range(n_rounds):
     payoffs = compute_pgg_payoffs(players_money, player_strategies, mult_factor)
 
     # Update the players strategies
+    new_player_strategies = np.zeros(shape=n_players)
     for i_player in range(len(player_strategies)):
         neighbor_idxs = list(graph.adj[i_player])
         neighbor_strats = [player_strategies[i] for i in neighbor_idxs]
         neighbor_payoffs = [payoffs[i] for i in neighbor_idxs]
-        new_player_strategies = np.zeros(shape = n_players)
         new_player_strategies[i_player] = update_strategy(players_money[i_player],
-                                                      player_strategies[i_player],
-                                                      payoffs[i_player],
-                                                      neighbor_strats,
-                                                      neighbor_payoffs,
-                                                      alpha,
-                                                      noise_intensity)
+                                                          player_strategies[i_player],
+                                                          payoffs[i_player],
+                                                          neighbor_strats,
+                                                          neighbor_payoffs,
+                                                          alpha,
+                                                          noise_intensity)
 
     player_strategies = new_player_strategies.copy()
     mean_contribs[:, i_round+1] = [np.median(player_strategies),

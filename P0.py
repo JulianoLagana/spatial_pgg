@@ -41,12 +41,12 @@ for i_round in range(n_rounds):
     new_player_strategies = np.zeros(n_players)
     for i_player in range(len(player_strategies)):
         new_player_strategies[i_player] = update_strategy(players_money[i_player],
-                                                      player_strategies[i_player],
-                                                      payoffs[i_player],
-                                                      player_strategies,
-                                                      payoffs,
-                                                      alpha,
-                                                      noise_intensity)
+                                                          player_strategies[i_player],
+                                                          payoffs[i_player],
+                                                          player_strategies,
+                                                          payoffs,
+                                                          alpha,
+                                                          noise_intensity)
     player_strategies = np.copy(new_player_strategies)
 
     # Save contributions made this round

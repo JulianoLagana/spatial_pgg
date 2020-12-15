@@ -51,8 +51,8 @@ for i_round in range(n_rounds):
 
     # Save contributions made this round
     mean_contribs[:, i_round+1] = [np.median(player_strategies),
-                                 np.percentile(player_strategies, 25),
-                                 np.percentile(player_strategies, 75)] # for mean plot
+                                   np.percentile(player_strategies, 25),
+                                   np.percentile(player_strategies, 75)] # for mean plot
     contribs[i_round+1, :] = player_strategies.copy() # Save contributions made this round
 
 # --- Mean plot ---

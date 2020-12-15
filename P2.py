@@ -28,7 +28,7 @@ reproducible = True
 
 # Optionally set seed for reproducibility
 if reproducible:
-    seed = 0
+    seed = 10
     np.random.seed(seed)
 else:
     seed = None
@@ -38,8 +38,8 @@ num_cores = multiprocessing.cpu_count()
 # Hyperparameters for the simulation
 n_players = 1000
 starting_money = 100
-mult_factor = 4
-n_rounds = 5*10**3
+mult_factor = 100
+n_rounds = 25
 connectivity = 4
 prob_new_edge = 0.3
 alpha = 0.5
@@ -51,7 +51,7 @@ circle = True
 log_scale = True # For the scatter plot
 size_marker = 0.5
 
-network = 'BA' # 'FB', 'BA' or 'WS'
+network = 'FB' # 'FB', 'BA' or 'WS'
 
 
 # Initializations
@@ -74,9 +74,11 @@ mean_contribs[:, 0] = [np.median(player_strategies),
 
 
 for i_round in range(n_rounds):
+
+    if i_round % 10 == 0:
+        print('Round: {:d}'.format(i_round))
     # Play one round
-    # payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor)
-    payoffs = compute_pgg_neighborhood_wise_payoffs_old(graph, players_money, player_strategies, mult_factor)
+    payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor)
 
 
     # Update the players strategies

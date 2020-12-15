@@ -20,7 +20,7 @@ else:
 # Hyperparameters for the simulation
 n_players = 30
 starting_money = 100
-mult_factor = 3
+mult_factor = 40
 n_rounds = 30
 connectivity = 6
 prob_new_edge = 0.3
@@ -62,8 +62,8 @@ for i_round in range(n_rounds):
 
     player_strategies = new_player_strategies.copy()
     mean_contribs[:, i_round+1] = [np.median(player_strategies),
-                                 np.percentile(player_strategies, 25),
-                                 np.percentile(player_strategies, 75)] # for mean plot
+                                   np.percentile(player_strategies, 25),
+                                   np.percentile(player_strategies, 75)] # for mean plot
     contribs[i_round+1, :] = player_strategies.copy() # Save contributions made this round
 
 

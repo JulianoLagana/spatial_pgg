@@ -38,8 +38,8 @@ num_cores = multiprocessing.cpu_count()
 # Hyperparameters for the simulation
 n_players = 1000
 starting_money = 100
-n_rounds_trans = 500
-n_rounds_avg = 50
+n_rounds_trans = 100
+n_rounds_avg = 10
 connectivity = 4
 prob_new_edge = 0.3
 alpha = 0.5
@@ -57,7 +57,7 @@ n_points = 10
 # Initializations
 if network == 'FB':
     graph, n_players = read_file_net('facebook_net.txt')
-    mult_factors = np.arange(1, 15.01, 14 / n_points)
+    mult_factors = np.arange(1, 20.01, 14 / n_points)
 elif network == 'BA':
     graph = nx.barabasi_albert_graph(n_players, m=3, seed=seed)
     mult_factors = np.arange(2, 8.01, 6 / n_points)
@@ -68,7 +68,7 @@ else:
 mean_degree = sum([graph.degree(i) for i in range(graph.order())])/n_players
 print('Mean degree = {:d}'.format(int(mean_degree)))
 
-# mult_factors = np.arange(0.01*(mean_degree + 1), 0.5*mean_degree + 1.01, 0.5*(mean_degree+1)/10)
+mult_factors = np.arange(1, 1.5*mean_degree + 1.01, 1*(mean_degree+1) / n_points)
 
 players_money = np.array([starting_money]*n_players)
 initial_player_strategies = np.random.random(size=n_players)*starting_money
@@ -131,6 +131,12 @@ plt.legend()
 plt.figure(figsize=(7, 6))
 plt.ylabel('Average contribution')
 plt.xlabel('r / (<k> + 1)')
-plt.plot(mult_factors/(mean_degree + 1), avg_median_contribs)
+x = mult_factors/(mean_degree + 1)
+plt.plot(x, avg_median_contribs)
+
+with open('x-' +network + '.npy', 'wb') as f:
+    np.save(f, x)
+with open('y-' network +'.npy', 'wb') as f:
+    np.save(f, avg_median_contribs)
 
 plt.show()

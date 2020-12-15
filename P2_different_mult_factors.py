@@ -134,9 +134,9 @@ plt.xlabel('r / (<k> + 1)')
 x = mult_factors/(mean_degree + 1)
 plt.plot(x, avg_median_contribs)
 
-with open('x-' +network + '.npy', 'wb') as f:
+with open('x-' + network + '.npy', 'wb') as f:
     np.save(f, x)
-with open('y-' network +'.npy', 'wb') as f:
+with open('y-' + network + '.npy', 'wb') as f:
     np.save(f, avg_median_contribs)
 
 plt.show()

@@ -28,7 +28,7 @@ reproducible = True
 
 # Optionally set seed for reproducibility
 if reproducible:
-    seed = 10
+    seed = 0
     np.random.seed(seed)
 else:
     seed = None
@@ -37,7 +37,7 @@ num_cores = multiprocessing.cpu_count()
 
 # Hyperparameters for the simulation
 starting_money = 100
-mult_factor = 100
+eta = 0.5
 n_rounds = 25
 alpha = 0.5
 noise_intensity = 1
@@ -48,7 +48,7 @@ circle = True
 log_scale = True # For the scatter plot
 size_marker = 0.5
 
-network = 'FB' # 'FB', 'BA' or 'WS'
+network = 'WS' # 'FB', 'BA' or 'WS'
 
 
 # Initializations
@@ -62,6 +62,9 @@ else:
     connectivity = 44
     prob_new_edge = 0.025
     graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+
+mean_degree = sum([graph.degree(i) for i in range(graph.order())])/n_players
+mult_factor = eta*(mean_degree + 1)
 
 # Initializations
 players_money = np.array([starting_money]*n_players)

@@ -36,8 +36,6 @@ num_cores = multiprocessing.cpu_count()
 
 # Hyperparameters for the simulation
 starting_money = 100
-n_rounds_max = 10**2
-n_rounds_check = 25
 alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
@@ -47,11 +45,15 @@ circle = True
 log_scale = True # For the scatter plot
 size_marker = 0.5
 network = 'BA' # 'FB', 'BA' or 'WS'
-n_points = 5
+n_points = 20
+n_inits = 10
+final_eta = 2
+n_rounds_max = 2*10**3
+n_rounds_check = 25
 slope = 0.1
 
 
-# Initializations
+# Initializations for the different networks
 if network == 'FB':
     graph, n_players = read_file_net('facebook_net.txt')
 
@@ -72,53 +74,47 @@ else:
 mean_degree = sum([graph.degree(i) for i in range(graph.order())])/n_players
 print('Mean degree = {:d}'.format(int(mean_degree)))
 
-mult_factors = np.arange(1, mean_degree + 1.01, (mean_degree+1) / n_points)
+mult_factors = np.arange(1, final_eta*(mean_degree + 1) + 0.01, (final_eta*(mean_degree+1)-1) / n_points)
 
 players_money = np.array([starting_money]*n_players)
-initial_player_strategies = np.random.random(size=n_players)*starting_money
 avg_median_contribs = np.zeros((len(mult_factors)))
 
-# Plot scatter of contributions and avg. in a different figure
-plt.figure(figsize=(7, 6))
-plt.ylabel('Average contribution')
-plt.xlabel('Round number')
+for i_init in range(n_inits):
 
-index_mult_factor = 0
-for mult_factor in list(mult_factors):
-    print('Mult. factor = {:.2f}'.format(mult_factor))
-    player_strategies = np.copy(initial_player_strategies)
+    initial_player_strategies = np.random.random(size=n_players) * starting_money
+    index_mult_factor = 0
+    print('Init. = {:d}'.format(i_init))
 
-    median_contribs = [np.median(player_strategies)]
+    for mult_factor in list(mult_factors):
+        print('\t Mult. factor = {:.2f}'.format(mult_factor))
+        player_strategies = np.copy(initial_player_strategies)
 
-    for i_round in range(n_rounds_max):
-        # Play one round
-        payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor)
+        medians = []
 
-        # Update the players strategies
-        new_player_strategies = Parallel(n_jobs=num_cores)(delayed(parallel_function)(i_player, list(graph.adj[i_player]), player_strategies, payoffs, players_money, alpha, noise_intensity) for i_player in range(len(player_strategies)))
-        player_strategies = np.array(new_player_strategies)
-        median_now = np.median(player_strategies)
-        median_contribs.append(median_now) # for mean plot
+        for i_round in range(n_rounds_max):
+            # Play one round
+            payoffs = compute_pgg_neighborhood_wise_payoffs(graph, players_money, player_strategies, mult_factor)
 
-        if i_round % n_rounds_check == 0 and i_round > 0:
-            last_points = median_contribs[-n_rounds_check:]
-            fit = np.polyfit(np.arange(n_rounds_check), last_points, deg=1)
-            avg_median_contribs[index_mult_factor] = np.mean(last_points) / n_rounds_check
-            if np.abs(fit[0]) < slope:
-                print('Break after: {:d}'.format(int(i_round/n_rounds_check)))
-                break
-    if i_round == (n_rounds_max - 1):
-        print('Maximum number of rounds reached')
+            # Update the players strategies
+            new_player_strategies = Parallel(n_jobs=num_cores)(delayed(parallel_function)(i_player, list(graph.adj[i_player]), player_strategies, payoffs, players_money, alpha, noise_intensity) for i_player in range(len(player_strategies)))
+            player_strategies = np.array(new_player_strategies)
+            median_now = np.median(player_strategies)
+            medians.append(median_now)
 
-    # Plot avg. contribution
-    mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 1)
-    x = list(range(len(median_contribs[:])))
-    plt.plot(median_contribs[:], label='r = {:.2f}'.format(mult_factor))
-    plt.ylim(0, 100)
+            if i_round % n_rounds_check == 0 and i_round > 0:
+                fit = np.polyfit(np.arange(n_rounds_check), medians[-n_rounds_check:], deg=1)
+                if np.abs(fit[0]) < slope:
+                    avg_median_contribs[index_mult_factor] += np.mean(medians[-n_rounds_check:]) / n_rounds_check
+                    print('\t Break after: {:d}'.format(int(i_round / n_rounds_check)))
+                    break
+                medians = []
 
-    index_mult_factor += 1
+        if i_round == (n_rounds_max - 1):
+            print('\t Maximum number of rounds reached')
+        index_mult_factor += 1
 
-plt.legend()
+avg_median_contribs /= n_inits
+
 
 plt.figure(figsize=(7, 6))
 plt.ylabel('Average contribution')
@@ -126,9 +122,9 @@ plt.xlabel('r / (<k> + 1)')
 x = mult_factors/(mean_degree + 1)
 plt.plot(x, avg_median_contribs)
 
-with open('x-' + network + '.npy', 'wb') as f:
+with open('fig/FinalCurves/x-' + network + '.npy', 'wb') as f:
     np.save(f, x)
-with open('y-' + network + '.npy', 'wb') as f:
+with open('fig/FinalCurves/y-' + network + '.npy', 'wb') as f:
     np.save(f, avg_median_contribs)
 
 plt.show()

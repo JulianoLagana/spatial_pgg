@@ -37,8 +37,8 @@ num_cores = multiprocessing.cpu_count()
 
 # Hyperparameters for the simulation
 starting_money = 100
-eta = 0.5
-n_rounds = 25
+eta = 0.55
+n_rounds = 500
 alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
@@ -48,7 +48,7 @@ circle = True
 log_scale = True # For the scatter plot
 size_marker = 0.5
 
-network = 'WS' # 'FB', 'BA' or 'WS'
+network = 'BA' # 'FB', 'BA' or 'WS'
 
 
 # Initializations

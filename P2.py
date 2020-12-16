@@ -36,12 +36,9 @@ else:
 num_cores = multiprocessing.cpu_count()
 
 # Hyperparameters for the simulation
-n_players = 1000
 starting_money = 100
 mult_factor = 100
 n_rounds = 25
-connectivity = 4
-prob_new_edge = 0.3
 alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
@@ -58,8 +55,12 @@ network = 'FB' # 'FB', 'BA' or 'WS'
 if network == 'FB':
     graph, n_players = read_file_net('facebook_net.txt')
 elif network == 'BA':
-    graph = nx.barabasi_albert_graph(n_players, m=3, seed=seed)
+    n_players = 4039
+    graph = nx.barabasi_albert_graph(n_players, m=4, seed=seed)
 else:
+    n_players = 4039
+    connectivity = 44
+    prob_new_edge = 0.025
     graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
 
 # Initializations

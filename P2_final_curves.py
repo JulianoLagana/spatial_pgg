@@ -7,6 +7,7 @@ from update_strategies import soft_noisy_update_according_to_best_neighbor
 from read_file_net import read_file_net
 import multiprocessing
 from joblib import Parallel, delayed
+import os
 
 
 def parallel_function(i_player, neighbor_idxs, player_strategies, payoffs, players_money, alpha, noise_intensity):
@@ -77,7 +78,8 @@ print('Mean degree = {:d}'.format(int(mean_degree)))
 mult_factors = np.arange(1, final_eta*(mean_degree + 1) + 0.01, (final_eta*(mean_degree+1)-1) / n_points)
 
 players_money = np.array([starting_money]*n_players)
-avg_median_contribs = np.zeros((len(mult_factors)))
+avg_median_contribs = np.zeros((n_inits, len(mult_factors)))
+avg_median_contribs_error = np.zeros((n_inits, len(mult_factors)))
 
 for i_init in range(n_inits):
 
@@ -103,8 +105,9 @@ for i_init in range(n_inits):
 
             if i_round % n_rounds_check == 0 and i_round > 0:
                 fit = np.polyfit(np.arange(n_rounds_check), medians[-n_rounds_check:], deg=1)
+                avg_median_contribs[i_init, index_mult_factor] = np.mean(medians[-n_rounds_check:])
+                avg_median_contribs_error[i_init, index_mult_factor] = np.std(medians[-n_rounds_check:]) / np.sqrt(n_rounds_check)
                 if np.abs(fit[0]) < slope:
-                    avg_median_contribs[index_mult_factor] += np.mean(medians[-n_rounds_check:]) / n_rounds_check
                     print('\t Break after: {:d}'.format(int(i_round / n_rounds_check)))
                     break
                 medians = []
@@ -113,18 +116,28 @@ for i_init in range(n_inits):
             print('\t Maximum number of rounds reached')
         index_mult_factor += 1
 
-avg_median_contribs /= n_inits
-
 
 plt.figure(figsize=(7, 6))
 plt.ylabel('Average contribution')
 plt.xlabel('r / (<k> + 1)')
+plt.title(network)
 x = mult_factors/(mean_degree + 1)
-plt.plot(x, avg_median_contribs)
+y = np.mean(avg_median_contribs, axis=0)
+plt.plot(x, y)
+error = np.zeros(len(x))
+for i in range(n_inits):
+    error += avg_median_contribs_error[i, :]**2
+error /= np.sqrt(n_inits)
+plt.errorbar(x, y, error)
+
+if not os.path.isdir('fig/FinalCurves'):
+    os.mkdir('fig/FinalCurves')
 
 with open('fig/FinalCurves/x-' + network + '.npy', 'wb') as f:
     np.save(f, x)
 with open('fig/FinalCurves/y-' + network + '.npy', 'wb') as f:
     np.save(f, avg_median_contribs)
+with open('fig/FinalCurves/error-' + network + '.npy', 'wb') as f:
+    np.save(f, avg_median_contribs_error)
 
 plt.show()

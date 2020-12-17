@@ -106,7 +106,7 @@ for i_init in range(n_inits):
             if i_round % n_rounds_check == 0 and i_round > 0:
                 fit = np.polyfit(np.arange(n_rounds_check), medians[-n_rounds_check:], deg=1)
                 avg_median_contribs[i_init, index_mult_factor] = np.mean(medians[-n_rounds_check:])
-                avg_median_contribs_error[i_init, index_mult_factor] = np.std(medians[-n_rounds_check:]) / np.sqrt(n_rounds_check)
+                avg_median_contribs_error[i_init, index_mult_factor] = np.std(medians[-n_rounds_check:]) / np.sqrt(n_rounds_check - 1)
                 if np.abs(fit[0]) < slope:
                     print('\t Break after: {:d}'.format(int(i_round / n_rounds_check)))
                     break
@@ -115,20 +115,6 @@ for i_init in range(n_inits):
         if i_round == (n_rounds_max - 1):
             print('\t Maximum number of rounds reached')
         index_mult_factor += 1
-
-
-plt.figure(figsize=(7, 6))
-plt.ylabel('Average contribution')
-plt.xlabel('r / (<k> + 1)')
-plt.title(network)
-x = mult_factors/(mean_degree + 1)
-y = np.mean(avg_median_contribs, axis=0)
-plt.plot(x, y)
-error = np.zeros(len(x))
-for i in range(n_inits):
-    error += avg_median_contribs_error[i, :]**2
-error /= np.sqrt(n_inits)
-plt.errorbar(x, y, error)
 
 if not os.path.isdir('fig/FinalCurves'):
     os.mkdir('fig/FinalCurves')
@@ -140,4 +126,16 @@ with open('fig/FinalCurves/y-' + network + '.npy', 'wb') as f:
 with open('fig/FinalCurves/error-' + network + '.npy', 'wb') as f:
     np.save(f, avg_median_contribs_error)
 
+
+plt.figure(figsize=(7, 6))
+plt.ylabel('Average contribution')
+plt.xlabel('r / (<k> + 1)')
+plt.title(network)
+x = mult_factors/(mean_degree + 1)
+y = np.mean(avg_median_contribs, axis=0)
+error = np.zeros(len(x))
+for i in range(n_inits):
+    error += avg_median_contribs_error[i, :]**2
+error = np.sqrt(error / n_inits)
+plt.errorbar(x, y, error)
 plt.show()

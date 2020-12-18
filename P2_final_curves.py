@@ -116,6 +116,10 @@ for i_init in range(n_inits):
             print('\t Maximum number of rounds reached')
         index_mult_factor += 1
 
+
+x = mult_factors/(mean_degree + 1)
+y = np.mean(avg_median_contribs, axis=0)
+
 if not os.path.isdir('fig/FinalCurves'):
     os.mkdir('fig/FinalCurves')
 
@@ -131,8 +135,7 @@ plt.figure(figsize=(7, 6))
 plt.ylabel('Average contribution')
 plt.xlabel('r / (<k> + 1)')
 plt.title(network)
-x = mult_factors/(mean_degree + 1)
-y = np.mean(avg_median_contribs, axis=0)
+
 error = np.zeros(len(x))
 for i in range(n_inits):
     error += avg_median_contribs_error[i, :]**2

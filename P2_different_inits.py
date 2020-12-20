@@ -36,8 +36,8 @@ num_cores = multiprocessing.cpu_count()
 
 # Hyperparameters for the simulation
 starting_money = 100
-n_rounds_trans = 25
-n_rounds_avg = 5
+n_rounds_trans = 250
+n_rounds_avg = 25
 alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
@@ -45,10 +45,10 @@ save_plots = False
 plot_graph = False
 circle = True
 log_scale = True # For the scatter plot
-size_marker = 0.1
-network = 'FB' # 'FB', 'BA' or 'WS'
-n_inits = 5
-mult_factor = 5
+size_marker = 0.001
+network = 'BA' # 'FB', 'BA' or 'WS'
+n_inits = 10
+eta = 0.55
 
 
 # Initializations for the different networks
@@ -71,6 +71,7 @@ else:
 
 mean_degree = sum([graph.degree(i) for i in range(graph.order())])/n_players
 print('Mean degree = {:d}'.format(int(mean_degree)))
+mult_factor = eta*(mean_degree + 1)
 
 
 avg_median_contribs = np.zeros(n_inits)

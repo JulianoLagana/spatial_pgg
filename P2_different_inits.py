@@ -36,7 +36,7 @@ num_cores = multiprocessing.cpu_count()
 
 # Hyperparameters for the simulation
 starting_money = 100
-n_rounds_trans = 250
+n_rounds_trans = 50
 n_rounds_avg = 25
 alpha = 0.5
 noise_intensity = 1
@@ -45,10 +45,12 @@ save_plots = False
 plot_graph = False
 circle = True
 log_scale = True # For the scatter plot
+regions = True
 size_marker = 0.001
-network = 'BA' # 'FB', 'BA' or 'WS'
+network = 'FB' # 'FB', 'BA' or 'WS'
+net_color = {'FB': 'blue', 'BA': 'orange', 'WS': 'green'}
 n_inits = 10
-eta = 0.55
+eta = 0.5
 
 
 # Initializations for the different networks
@@ -156,11 +158,21 @@ for iter_index in range(n_inits*n_rounds_avg):
 
 median_contribs_degree = [np.median(ordered_contribs[i]) for i in range(len(existing_degrees))]
 error_bars = np.zeros((2, len(existing_degrees)))
-error_bars[0, :] = [median_contribs_degree[i] - np.percentile(ordered_contribs[i], 25) for i in range(len(existing_degrees))]
-error_bars[1, :] = [np.percentile(ordered_contribs[i], 75) - median_contribs_degree[i] for i in range(len(existing_degrees))]
 
 size_markers = [len(ordered_contribs[i]) * size_marker for i in range(len(existing_degrees))]
-plt.scatter(existing_degrees, median_contribs_degree, s=size_markers)
-plt.errorbar(existing_degrees, median_contribs_degree, error_bars, alpha=0.5, linestyle='--')
+plt.scatter(existing_degrees, median_contribs_degree, s=size_markers, c=net_color[network])
+if regions:
+    error_bars[0, :] = [np.percentile(ordered_contribs[i], 75) for i in
+                        range(len(existing_degrees))]
+    error_bars[1, :] = [np.percentile(ordered_contribs[i], 25) for i in
+                        range(len(existing_degrees))]
+    plt.fill_between(existing_degrees, error_bars[0, :], error_bars[1, :], color=net_color[network], edgecolor=None, alpha=0.25)
+    plt.plot(existing_degrees, median_contribs_degree, linestyle='--', alpha=0.5, c=net_color[network])
+else:
+    error_bars[0, :] = [median_contribs_degree[i] - np.percentile(ordered_contribs[i], 25) for i in
+                        range(len(existing_degrees))]
+    error_bars[1, :] = [np.percentile(ordered_contribs[i], 75) - median_contribs_degree[i] for i in
+                        range(len(existing_degrees))]
+    plt.errorbar(existing_degrees, median_contribs_degree, error_bars, alpha=0.5, linestyle='--')
 
 plt.show()

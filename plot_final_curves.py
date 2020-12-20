@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 nets = ['FB', 'BA', 'WS']
-nets = ['BA']
 path = 'fig/FinalCurves/'
 
 plt.figure(figsize=(7, 6))
@@ -17,7 +16,7 @@ for net in nets:
     for i in range(error_aux.shape[0]):
         error += error_aux[i, :] ** 2
     error = np.sqrt(error / error_aux.shape[0])
-    plt.errorbar(x, y, error, label=net)
+    plt.errorbar(x, y, error, label=net, marker='o')
 
 plt.legend()
 plt.show()

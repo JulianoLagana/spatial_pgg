@@ -6,7 +6,7 @@ from read_file_net import read_file_net
 seed = 1
 np.random.seed(seed)
 
-network = 'WS' # 'FB', 'BA' or 'WS'
+network = 'WS-2' # 'FB', 'BA' or 'WS'
 marker_size = 0.8
 plot_graph = False
 max_index_fit = 22
@@ -24,15 +24,29 @@ elif network == 'BA':
 
 elif network == 'WS':
     n_players = 4039
-    connectivity = 44
-    prob_new_edge = 0.025
+    connectivity = 18 # 44
+    prob_new_edge = 0.1 # 0.025
     graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
     circle = True
 
 elif network == 'WS-1': # For example for the clustering coeff simulations
     n_players = 1000
     connectivity = 10
-    prob_new_edge = 0.025
+    prob_new_edge = 0.05
+    graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+    circle = True
+
+elif network == 'WS-2':
+    n_players = 1000
+    connectivity = 6
+    prob_new_edge = 0.175
+    graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+    circle = True
+
+elif network == 'WS-3':
+    n_players = 1000
+    connectivity = 20
+    prob_new_edge = 0.009
     graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
     circle = True
 

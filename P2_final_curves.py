@@ -136,9 +136,13 @@ plt.ylabel('Average contribution')
 plt.xlabel('r / (<k> + 1)')
 plt.title(network)
 
+error_aux = np.std(avg_median_contribs, axis=0) / np.sqrt(avg_median_contribs.shape[0] - 1)
+error_aux = error_aux**2
 error = np.zeros(len(x))
-for i in range(n_inits):
-    error += avg_median_contribs_error[i, :]**2
-error = np.sqrt(error / n_inits)
+for i in range(avg_median_contribs_error.shape[0]):
+    error += avg_median_contribs_error[i, :] ** 2
+error = error / avg_median_contribs_error.shape[0]**2
+error += error_aux
+error = np.sqrt(error)
 plt.errorbar(x, y, error)
 plt.show()

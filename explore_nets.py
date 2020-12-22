@@ -22,12 +22,22 @@ elif network == 'BA':
     graph = nx.barabasi_albert_graph(n_players, m=m, seed=seed)
     circle = True
 
-else:
+elif network == 'WS':
     n_players = 4039
     connectivity = 44
     prob_new_edge = 0.025
     graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
     circle = True
+
+elif network == 'WS-1': # For example for the clustering coeff simulations
+    n_players = 1000
+    connectivity = 10
+    prob_new_edge = 0.025
+    graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+    circle = True
+
+else:
+    raise Exception('You have chosen a network type which is not defined.')
 
 
 # Plot graph

@@ -49,6 +49,7 @@ size_marker = 0.5
 network = 'BA' # 'FB', 'BA' or 'WS'
 n_points = 5
 slope = 0.1
+final_eta = 2
 
 
 # Initializations
@@ -72,7 +73,7 @@ else:
 mean_degree = sum([graph.degree(i) for i in range(graph.order())])/n_players
 print('Mean degree = {:d}'.format(int(mean_degree)))
 
-mult_factors = np.arange(1, mean_degree + 1.01, (mean_degree+1) / n_points)
+mult_factors = np.arange(1, final_eta*(mean_degree + 1) + 0.01, (final_eta*(mean_degree+1) - 1) / n_points)
 
 players_money = np.array([starting_money]*n_players)
 initial_player_strategies = np.random.random(size=n_players)*starting_money

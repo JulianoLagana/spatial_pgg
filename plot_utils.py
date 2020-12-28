@@ -203,7 +203,7 @@ def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box
     plt.ylim(0, 100);
 
 
-def changePlotter(graph, contribution, rounds):
+def changePlotter(graph, contribution, rounds, args):
     """
     Generate plot of changes to network graph.
 
@@ -228,4 +228,7 @@ def changePlotter(graph, contribution, rounds):
         ax.set_title(f'Round {rounds[i]}')
         colors = [curve[1][rounds[i]] for curve in contribution]
         nx.draw_circular(graph, with_labels=False, ax=ax, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+    
+    if args.save:
+        plt.savefig('fig/Spread_' + args.out_path + '.png')
     plt.show()  

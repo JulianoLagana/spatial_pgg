@@ -5,7 +5,7 @@ import numpy as np
 
 from joblib import Parallel, delayed
 
-from pgg import compute_pgg_neighborhood_wise_payoffs, compute_pgg_neighborhood_wise_payoffs_old
+from pgg import compute_pgg_neighborhood_wise_payoffs, compute_pgg_neighborhood_wise_payoffs_old, compute_pgg_layered_payoffs
 from update_strategies import soft_noisy_update_according_to_best_neighbor
 from read_file_net import read_file_net
 
@@ -41,8 +41,14 @@ class NetworkPGG():
     """
     Modular PGG class that works with different update and pay-off engines.
 
+    Arguments:
+
+        -args dictionary with argparse arguments
+        -graph network of the networkx graph class
+
     """
-    def __init__(self, args, graph, starting_money=100, alpha=0.5, noise_intensity=1, payoff_engines=compute_pgg_neighborhood_wise_payoffs, update_engine=soft_noisy_update_according_to_best_neighbor):
+    def __init__(self, args, graph, starting_money=100, alpha=0.5, noise_intensity=1, payoff_engines=compute_pgg_neighborhood_wise_payoffs, update_engine=soft_noisy_update_according_to_best_neighbor, countries=None):
+        np.random.seed(seed=args.seed)
         self.graph = graph
         self.n_players = graph.number_of_nodes()
         self.update_engine = update_engine
@@ -58,6 +64,13 @@ class NetworkPGG():
         # Simulation variables
         self.players_money = np.array([self.starting_money] * self.n_players)
         self.player_strategies = np.random.random(size=self.n_players)*self.starting_money
+        if countries:
+            # Change number of countries
+            players = np.array(list(graph.nodes))
+            # Change number of countries
+            self.countries = np.array_split(players, countries)
+        else:
+            self.countries = None
 
 
     def simulate(self):
@@ -79,7 +92,14 @@ class NetworkPGG():
             if i_round % 10 == 0:
                 print('Round: {:d}'.format(i_round))
             # Play one round
+
             self.payoffs = self.payoff_engines(self.graph, self.players_money, self.player_strategies, self.mult_factor)
+
+            if self.countries:
+                self.payoffs = compute_pgg_layered_payoffs(self.graph, self.players_money, self.player_strategies, self.mult_factor, self.countries)
+            
+            # Change utility of players to incorporate average friends pay-off
+            # payoffs = [payoffs[i] + (gamma * np.min(payoffs[list(graph.adj[i])])) for i in range(len(player_strategies))]
 
             # Update the players strategies
             new_player_strategies = Parallel(n_jobs=num_cores)(delayed(self.parallel_function)(i_player, list(self.graph.adj[i_player]), self.player_strategies, self.payoffs, self.players_money, self.alpha, self.noise_intensity) for i_player in range(len(self.player_strategies)))

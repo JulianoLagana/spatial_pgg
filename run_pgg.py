@@ -17,7 +17,7 @@ from modular_pgg import NetworkPGG, graph_constructor
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--simulation', type=str, choices=["cluster", "spread"], help='Declare which simulation to run (cluster, spread).')
+    parser.add_argument('--simulation', type=str, choices=["cluster", "spread", "layered"], help='Declare which simulation to run (cluster, spread).')
     parser.add_argument('--network', type=str, choices=["WS", "BA", "FA"], help='Declare wether to use WS, BA, or FA network.')
     parser.add_argument('--out_path', type=str, default=None, help='Possibilitz to give a specific out_path for the plots.')
     parser.add_argument('--player', default=100, type=int, help='Integer value for the number of players.')
@@ -31,74 +31,71 @@ def get_parser():
 
 
 def cluster(args):
-    # Optionally set seed for reproducibility
-    if reproducible:
-        seed = SEED
-        np.random.seed(seed)
-    else:
-        seed = None
+    """This function has been implemented to investigate 
+        how the clustering coefficients affects cooperation in WS.
+    """
 
-    soft_noisy_update_according_to_best_neighbor
     circle = True if args.network=="WS" else False
-    log_scale = True # For the scatter plot
-    size_marker = 0.5
-    pass
-
-
-def plot(graph, contribution_curves):
-    circle = True if args.network=="WS" else False
-    log_scale = True # For the scatter plot
+    log_scale = True 
     size_marker = 0.5
 
-    
+    if args.seed:
+        np.random.seed(args.seed)
 
-    if plot_graph:
-        # Create plotting window
-        fig, ax = plt.subplots(ncols=2, figsize=(15, 6))
+    for i in [4, 5, 6, 10, 12, 20, 30]:
+        graph = graph_constructor(args, connectivity=i, prob_new_edge=0.3)
+        PGG = NetworkPGG(args, graph)
+        PGG.simulate()
 
-        ax[0].set_title('P2: Graph (hover a node to outline its contribution)')
-        ax[1].set_title('P2: Contributions over time, n='+str(n_players)+', stoch.='+str(noise_intensity))
-        ax[1].set_xlabel('Round number')
-        ax[1].set_ylabel('Contributions')
+        if args.plot:
+            # Create plotting window
+            fig, ax = plt.subplots(ncols=2, figsize=(15, 6))
 
-        # Plot graph and curves
-        linked_plotter = LinkedPlotter(graph, contribution_curves, ax[0], ax[1], fig, circle=circle)
-        if save_plots:
-            fig.savefig('fig/P2_individuals_graph-'+str(n_players)+'_'+str(noise_intensity)+'.png')
+            ax[0].set_title('P2: Graph (hover a node to outline its contribution)')
+            ax[1].set_title('P2: Contributions over time, n='+str(PGG.n_players)+', stoch.='+str(PGG.noise_intensity))
+            ax[1].set_xlabel('Round number')
+            ax[1].set_ylabel('Contributions')
 
-    # Plot scatter of contributions and avg. in a different figure
-    fig2, ax2 = plt.subplots(ncols=2, figsize=(15, 6))
-    ax2[0].set_title('P2: Contribution vs connectivity')
-    ax2[0].set_xlabel('Degree')
-    ax2[0].set_ylabel('Average contribution')
-    ax2[1].set_title('P2: Median contribution over time (quart. percentiles), n='+str(n_players)+', stoch.='+str(noise_intensity))
-    ax2[1].set_xlabel('Round number')
+            # Plot graph and curves
+            linked_plotter = LinkedPlotter(PGG.graph, PGG.contribution_curves, ax[0], ax[1], fig, circle=circle)
+            if args.save:
+                fig.savefig('fig/P2_cluster_graph-'+str(PGG.n_players)+'_'+str(PGG.noise_intensity)+'.png')
+            plt.show()
 
-    # Plot average contribution vs degree and average contribution level
-    avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1], log_scale=log_scale, size_marker=size_marker)
-    if save_plots:
-        fig2.savefig('fig/P2_median-'+str(n_players)+'_'+str(noise_intensity)+'.png')
+        # Plot scatter of contributions and avg. in a different figure
+        fig2, ax2 = plt.subplots(ncols=2, figsize=(15, 6))
+        ax2[0].set_title('P2: Contribution vs connectivity')
+        ax2[0].set_xlabel('Degree')
+        ax2[0].set_ylabel('Average contribution')
+        ax2[1].set_title('P2: Median contribution over time (quart. percentiles), n='+str(PGG.n_players)+', stoch.='+str(PGG.noise_intensity))
+        ax2[1].set_xlabel('Round number')
 
-    plt.show()
+        # Plot average contribution vs degree and average contribution level
+        avgPlotter(PGG.graph, PGG.contribution_curves, PGG.mean_contribs, ax2[0], ax2[1], log_scale=log_scale, size_marker=size_marker)
+        if args.save:
+            fig2.savefig('fig/P2_median-'+str(PGG.n_players)+'_'+str(PGG.noise_intensity)+'.png')
+
+        plt.show()
 
 
 def spread(args):
     """This function has been implemented to investigate 
-        how cooperation can spread from clusters.
+        how cooperation can spread from a single clusters.
     """
     if args.seed:
         np.random.seed(args.seed)
-    else:
-        seed = None
 
     graph = graph_constructor(args, connectivity=4, prob_new_edge=0.3)
     PGG = NetworkPGG(args, graph)
     PGG.simulate()
-    changePlotter(PGG.graph, PGG.contribution_curves, [-1])
+
+    args.out_path += "random"
+    changePlotter(PGG.graph, PGG.contribution_curves, [-1], args)
+    args.out_path = args.out_path[:-len("random")]
 
     # Intialize random cluster of players to 100% contribution and rest to zero.
     player_strategies = np.zeros(shape=PGG.n_players)
-    start = np.random.randint(0, PGG.n_players)
+    start = np.random.randint(0, PGG.n_players, seed=args.seed)
     player_strategies[start] = PGG.starting_money
     start = list(graph.adj[start])
     for i in range(1): #set depth of cluster
@@ -107,26 +104,77 @@ def spread(args):
             new += list(graph.adj[a])
             player_strategies[a] = PGG.starting_money
         start = new
+    
     PGG.player_strategies = player_strategies
+    PGG.simulate()
+    args.out_path += "spread"
+    changePlotter(PGG.graph, PGG.contribution_curves, [0, 1, 2, 3, 4, 5, 10, 20, 40, 80, 99], args)
+    args.out_path = args.out_path[:-len("spread")]
 
+
+def PGG_03(args):
+    """This function has been implemented to investigate 
+        playing multiple subgames (country interpretation).
+    """
+    circle = True if args.network=="WS" else False
+    log_scale = True 
+    size_marker = 0.5
+
+    if args.seed:
+        np.random.seed(args.seed)
+
+    graph = graph_constructor(args, connectivity=4, prob_new_edge=0.3)
+    PGG = NetworkPGG(args, graph, countries=5)
     PGG.simulate()
 
-    changePlotter(PGG.graph, PGG.contribution_curves, [0, 1, 2, 3, 4, 5, 10, 20, 40, 80, 99])
+
+    if args.plot:
+        # Create plotting window
+        fig, ax = plt.subplots(ncols=2, figsize=(15, 6))
+
+        ax[0].set_title('P2: Graph (hover a node to outline its contribution)')
+        ax[1].set_title('P2: Contributions over time, n='+str(PGG.n_players)+', stoch.='+str(PGG.noise_intensity))
+        ax[1].set_xlabel('Round number')
+        ax[1].set_ylabel('Contributions')
+
+        # Plot graph and curves
+        linked_plotter = LinkedPlotter(PGG.graph, PGG.contribution_curves, ax[0], ax[1], fig, circle=circle, country=PGG.countries)
+        if args.save:
+            fig.savefig('fig/P3_cluster_graph-'+str(PGG.n_players)+'_'+str(PGG.noise_intensity)+'.png')
+        plt.show()
+
+    # Plot scatter of contributions and avg. in a different figure
+    fig2, ax2 = plt.subplots(ncols=2, figsize=(15, 6))
+    ax2[0].set_title('P2: Contribution vs connectivity')
+    ax2[0].set_xlabel('Degree')
+    ax2[0].set_ylabel('Average contribution')
+    ax2[1].set_title('P2: Median contribution over time (quart. percentiles), n='+str(PGG.n_players)+', stoch.='+str(PGG.noise_intensity))
+    ax2[1].set_xlabel('Round number')
+
+    # Plot average contribution vs degree and average contribution level
+    avgPlotter(PGG.graph, PGG.contribution_curves, PGG.mean_contribs, ax2[0], ax2[1], log_scale=log_scale, size_marker=size_marker)
+    if args.save:
+        fig2.savefig('fig/P3_median-'+str(PGG.n_players)+'_'+str(PGG.noise_intensity)+'.png')
+
+    plt.show()
+
+
 
 
 def main(args):
+    if not args.out_path:
+        args.out_path = str(args.rounds) + "_" + str(args.player) + "_" + args.network + "_" + str(args.r)
+
     if args.simulation == "cluster":
         cluster(args)
-        print(args.simulation)
-
+        
     if args.simulation == "spread":
         spread(args)
-        print(args.simulation)
 
+    if args.simulation == "layered":
+        PGG_03(args)
 
 
 if __name__ == "__main__":
     args = get_parser().parse_args()
     main(args)
-
-

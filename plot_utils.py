@@ -4,6 +4,7 @@ import networkx as nx
 import string
 
 from matplotlib.widgets import Slider
+from matplotlib import gridspec
 from statistics import mean, stdev
 
 
@@ -61,7 +62,6 @@ class LinkedPlotter:
             self.lines.append(line)
         n_sim_steps = len(self.curves[0][0])
         self.ax_curves.set_xlim([-0.1, n_sim_steps-1])
-
 
 
         # Save current curves colors and zorders for later 'hover off' update
@@ -203,3 +203,29 @@ def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box
     plt.ylim(0, 100);
 
 
+def changePlotter(graph, contribution, rounds):
+    """
+    Generate plot of changes to network graph.
+
+    Params:
+        graph: Graph to be plotted.
+        contribution: List of contribution curves. Each element is a list [xs, ys], where xs and ys are respectively a list
+        of the x and y coordinates of the points to be plotted.
+        iterations: Int iteration step of which rounds to plot.
+        
+    """
+    sizes = [graph.degree(i)*10 for i in range(graph.order())]
+
+    # Dynamics subplot to show developement of the network
+    N = len(rounds)
+    cols = 5
+    rows = N // cols + 1
+
+    gs = gridspec.GridSpec(rows, cols)
+    fig = plt.figure()
+    for i in range(N):
+        ax = fig.add_subplot(gs[i])
+        ax.set_title(f'Round {rounds[i]}')
+        colors = [curve[1][rounds[i]] for curve in contribution]
+        nx.draw_circular(graph, with_labels=False, ax=ax, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+    plt.show()  

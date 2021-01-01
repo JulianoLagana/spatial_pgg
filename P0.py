@@ -14,7 +14,7 @@ if reproducible:
     np.random.seed(seed)
 
 # Hyperparameters for the simulation
-n_players = 30
+n_players = 10
 starting_money = 100
 mult_factor = 1.5
 n_rounds = 100
@@ -57,11 +57,11 @@ for i_round in range(n_rounds):
 
 # --- Mean plot ---
 plot_mean_contribs = plt.figure(0)
-mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 0.3)
+mean_color = "pink"
 x = list(range(len(mean_contribs[0, :])))
 plt.plot(mean_contribs[0, :], color=mean_color)
-plt.fill_between(x, (mean_contribs[1, :]), (mean_contribs[2, :]), color=mean_color, edgecolor=None)
-plt.title('P0: Median contribution over time (quart. percentiles), n='+str(n_players))
+plt.fill_between(x, (mean_contribs[1, :]), (mean_contribs[2, :]), color=mean_color, alpha=0.3, edgecolor=None)
+plt.title('P0: Median contribution over time (quart. percentiles), r='+str(mult_factor)+', n='+str(n_players))
 plt.xlabel('Round number')
 plt.ylabel('Average Contribution')
 plot_mean_contribs.show()
@@ -71,7 +71,7 @@ if save_plots:
 # --- Individuals plot ---
 plot_contribs = plt.figure(1)
 plt.plot(contribs, '.-')
-plt.title('P0: Individual contribution over time, n='+str(n_players))
+plt.title('P0: Individual contribution over time, r='+str(mult_factor)+', n='+str(n_players))
 plt.xlabel('Round number')
 plt.ylabel('Contributions')
 plt.grid()

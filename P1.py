@@ -18,17 +18,19 @@ else:
     seed = None
 
 # Hyperparameters for the simulation
-n_players = 30
+n_players = 10
 starting_money = 100
-mult_factor = 40
+mult_factor = 1.5
 n_rounds = 30
 connectivity = 6
 prob_new_edge = 0.3
 alpha = 0.5
 noise_intensity = 1
 update_strategy = soft_noisy_update_according_to_best_neighbor
-save_plots = False
+save_plots = True
 circle = True
+
+network = 'BA'
 
 # Initializations
 players_money = np.array([starting_money]*n_players)
@@ -39,8 +41,9 @@ mean_contribs = np.zeros((3, n_rounds+1)) # data structure for the mean plot
 mean_contribs[:, 0] = [np.median(player_strategies),
                        np.percentile(player_strategies, 25),
                        np.percentile(player_strategies, 75)]
-# graph = nx.barabasi_albert_graph(n_players, connectivity, seed=seed)
-graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+graph = nx.barabasi_albert_graph(n_players, connectivity, seed=seed)
+# graph = nx.watts_strogatz_graph(n_players, connectivity, prob_new_edge, seed=seed)
+
 
 for i_round in range(n_rounds):
     # Play one round
@@ -91,11 +94,11 @@ fig2, ax2 = plt.subplots(ncols=2, figsize=(15, 6))
 ax2[0].set_title('P1: Contribution vs connectivity')
 ax2[0].set_xlabel('Degree')
 ax2[0].set_ylabel('Average contribution')
-ax2[1].set_title('P1: Median contribution over time (quart. percentiles), n='+str(n_players))
+ax2[1].set_title('P1: Median contribution over time (quart. percentiles), r='+str(mult_factor)+', n='+str(n_players))
 ax2[1].set_xlabel('Round number')
 
 # Plot average contribution vs degree and average contribution level
-avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1])
+avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1], network=network)
 if save_plots:
     fig2.savefig('fig/P1_median-'+str(n_players)+'.png')
 

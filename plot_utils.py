@@ -140,7 +140,7 @@ if __name__ == '__main__':
     plt.show()
 
 
-def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box_plot=False, median=True, log_scale=True, size_marker=5):
+def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box_plot=False, median=True, log_scale=True, size_marker=5, network=""):
     """
     Generates a scatter plot of the mean contribution vs the number of neighbours (with error bars) if box_plot is set
     to False (default) or a boxplot if it is set to True. And also a plot (with error regions) for the average contribution
@@ -196,10 +196,16 @@ def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box
 
     # Plot avg. contribution
     mean_color = (np.random.rand(), np.random.rand(), np.random.rand(), 0.3)
+    if network == "WS":
+        mean_color = "green"
+    elif network == "BA":
+        mean_color = "orange"
+    elif network == "FB":
+        mean_color = "blue"
     x = list(range(len(mean_contribs[0, :])))
     #ax_avg.plot(mean_contribs[0, :], color=mean_color)
     ax_avg.plot(mean_contribs[0, :], color=mean_color, )
-    plt.fill_between(x, (mean_contribs[1, :]), (mean_contribs[2, :]), color=mean_color, edgecolor=None)
+    plt.fill_between(x, (mean_contribs[1, :]), (mean_contribs[2, :]), color=mean_color, alpha=0.3 ,edgecolor=None)
     plt.ylim(0, 100);
 
 

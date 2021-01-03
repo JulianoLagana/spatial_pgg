@@ -124,7 +124,7 @@ ax2[1].set_title('P2: Median contribution over time (quart. percentiles), n='+st
 ax2[1].set_xlabel('Round number')
 
 # Plot average contribution vs degree and average contribution level
-avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1], log_scale=log_scale, size_marker=size_marker)
+avgPlotter(graph, contribution_curves, mean_contribs, ax2[0], ax2[1], log_scale=log_scale, size_marker=size_marker, network=network)
 if save_plots:
     fig2.savefig('fig/P2_median-'+str(n_players)+'_'+str(noise_intensity)+'.png')
 

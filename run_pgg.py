@@ -39,9 +39,6 @@ def cluster(args):
     log_scale = True 
     size_marker = 0.5
 
-    if args.seed:
-        np.random.seed(args.seed)
-
     for i in [4, 5, 6, 10, 12, 20, 30]:
         graph = graph_constructor(args, connectivity=i, prob_new_edge=0.3)
         PGG = NetworkPGG(args, graph)
@@ -82,8 +79,6 @@ def spread(args):
     """This function has been implemented to investigate 
         how cooperation can spread from a single clusters.
     """
-    if args.seed:
-        np.random.seed(args.seed)
 
     graph = graph_constructor(args, connectivity=4, prob_new_edge=0.3)
     PGG = NetworkPGG(args, graph)
@@ -95,7 +90,7 @@ def spread(args):
 
     # Intialize random cluster of players to 100% contribution and rest to zero.
     player_strategies = np.zeros(shape=PGG.n_players)
-    start = np.random.randint(0, PGG.n_players, seed=args.seed)
+    start = np.random.randint(0, PGG.n_players)
     player_strategies[start] = PGG.starting_money
     start = list(graph.adj[start])
     for i in range(1): #set depth of cluster
@@ -108,7 +103,7 @@ def spread(args):
     PGG.player_strategies = player_strategies
     PGG.simulate()
     args.out_path += "spread"
-    changePlotter(PGG.graph, PGG.contribution_curves, [0, 1, 2, 3, 4, 5, 10, 20, 40, 80, 99], args)
+    changePlotter(PGG.graph, PGG.contribution_curves, [0, 2, 5, 10, 15, 20, 40, 80, 99], args)
     args.out_path = args.out_path[:-len("spread")]
 
 
@@ -119,9 +114,6 @@ def PGG_03(args):
     circle = True if args.network=="WS" else False
     log_scale = True 
     size_marker = 0.5
-
-    if args.seed:
-        np.random.seed(args.seed)
 
     graph = graph_constructor(args, connectivity=4, prob_new_edge=0.3)
     PGG = NetworkPGG(args, graph, countries=5)
@@ -159,9 +151,10 @@ def PGG_03(args):
     plt.show()
 
 
-
-
 def main(args):
+    if args.seed:
+        np.random.seed(args.seed)
+
     if not args.out_path:
         args.out_path = str(args.rounds) + "_" + str(args.player) + "_" + args.network + "_" + str(args.r)
 

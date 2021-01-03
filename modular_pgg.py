@@ -26,7 +26,7 @@ def graph_constructor(args, m=None, connectivity=None, prob_new_edge=None):
             raise Warning("Missing arguments for the choosen network.")
         graph = nx.watts_strogatz_graph(args.player, connectivity, prob_new_edge, seed=args.seed)
     
-    print(f"Constructed {args.network} graph:")
+    print(f'Constructed {args.network} graph:')
     # Average shortest path length
     print('Average shortest path length: {:f}'.format(nx.average_shortest_path_length(graph)))
     # Clustering coeff

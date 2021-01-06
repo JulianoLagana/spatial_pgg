@@ -209,32 +209,57 @@ def avgPlotter(graph, contribution_curves, mean_contribs, ax_degree, ax_avg, box
     plt.ylim(0, 100);
 
 
-def changePlotter(graph, contribution, rounds, args):
+def changePlotter(graph, contribution, rounds, args, titles=None, y_labels=None, cols=5):
     """
     Generate plot of changes to network graph.
 
     Params:
         graph: Graph to be plotted.
-        contribution: List of contribution curves. Each element is a list [xs, ys], where xs and ys are respectively a list
-        of the x and y coordinates of the points to be plotted.
-        iterations: Int iteration step of which rounds to plot.
-        
+        contribution: Array of contributions with shape (rounds, player).
+        rounds: List of rounds to be plotted.
+        args: Argparse arguments.
+        titles: Titles for each of the graphs.
+        y_labels: Labels per row.
+        cols: Number of columns.
+
     """
     sizes = [graph.degree(i)*10 for i in range(graph.order())]
+    if not titles:
+        titles = [f"Round: {i}" for i in rounds]
 
     # Dynamics subplot to show developement of the network
     N = len(rounds)
-    cols = 5
-    rows = N // cols + 1
+    cols = cols
+    rows = N // cols + 1 if N % cols else N // cols
+    #print(N, cols, rows)
 
     gs = gridspec.GridSpec(rows, cols)
-    fig = plt.figure()
+    fig = plt.figure(figsize=(1.2*rows*6, 1.2*cols))
     for i in range(N):
         ax = fig.add_subplot(gs[i])
-        ax.set_title(f'Round {rounds[i]}')
-        colors = [curve[1][rounds[i]] for curve in contribution]
-        nx.draw_circular(graph, with_labels=False, ax=ax, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+        ax.set_title(titles[i])
+        
+        colors = contribution[rounds[i],:]
+        if args.network == "WS":
+            nx.draw_circular(graph, with_labels=False, ax=ax, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+        elif args.network == "BA":
+            nx.draw_kamada_kawai(graph, with_labels=False, ax=ax, node_size=sizes, node_color=colors, vmin=0, vmax=100)
+
+        if y_labels:
+            # Custom y labels
+            ax.set_axis_on()
+            if i%cols==0:
+                ax.set_ylabel(y_labels[i//cols])
+            ax.tick_params(
+                axis='x',
+                which='both',
+                bottom=False,
+                top=False,
+                labelbottom=False)
+            ax.spines['right'].set_visible(False)
+            ax.spines['top'].set_visible(False)
+            ax.spines['left'].set_visible(False)
+            ax.spines['bottom'].set_visible(False)
+
     
-    if args.save:
-        plt.savefig('fig/Spread_' + args.out_path + '.png')
-    plt.show()  
+    return plt

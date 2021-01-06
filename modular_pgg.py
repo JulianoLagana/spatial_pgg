@@ -43,8 +43,8 @@ class NetworkPGG():
 
     Arguments:
 
-        -args dictionary with argparse arguments
-        -graph network of the networkx graph class
+        -args: dictionary with argparse arguments
+        -graph: network of the networkx graph class
 
     """
     def __init__(self, args, graph, starting_money=100, alpha=0.5, noise_intensity=1, payoff_engines=compute_pgg_neighborhood_wise_payoffs, update_engine=soft_noisy_update_according_to_best_neighbor, countries=None):
@@ -53,6 +53,7 @@ class NetworkPGG():
         self.n_players = graph.number_of_nodes()
         self.update_engine = update_engine
         self.payoff_engines = payoff_engines
+        self.num_cores = multiprocessing.cpu_count()
 
         # Hyperparameters for the simulation
         self.starting_money = starting_money
@@ -76,8 +77,6 @@ class NetworkPGG():
     def simulate(self):
         """Simulate the game for self.n_rounds and calculate the contibutions for given settings.
         """
-        num_cores = multiprocessing.cpu_count()
-
         self.contribs = np.zeros((self.n_rounds+1, self.n_players))
         self.contribs[0, :] = self.player_strategies.copy()
 
@@ -102,7 +101,7 @@ class NetworkPGG():
             # payoffs = [payoffs[i] + (gamma * np.min(payoffs[list(graph.adj[i])])) for i in range(len(player_strategies))]
 
             # Update the players strategies
-            new_player_strategies = Parallel(n_jobs=num_cores)(delayed(self.parallel_function)(i_player, list(self.graph.adj[i_player]), self.player_strategies, self.payoffs, self.players_money, self.alpha, self.noise_intensity) for i_player in range(len(self.player_strategies)))
+            new_player_strategies = Parallel(n_jobs=self.num_cores)(delayed(self.parallel_function)(i_player, list(self.graph.adj[i_player]), self.player_strategies, self.payoffs, self.players_money, self.alpha, self.noise_intensity) for i_player in range(len(self.player_strategies)))
             self.player_strategies = np.array(new_player_strategies)
             self.mean_contribs[:, i_round+1] = [np.median(self.player_strategies),
                                         np.percentile(self.player_strategies, 25),

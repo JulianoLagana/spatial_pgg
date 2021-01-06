@@ -97,8 +97,8 @@ class NetworkPGG():
             if self.countries:
                 self.payoffs = compute_pgg_layered_payoffs(self.graph, self.players_money, self.player_strategies, self.mult_factor, self.countries)
             
-                payoffs = self.payoffs.copy()
-                gamma = 0.5
+                # payoffs = self.payoffs.copy()
+                # gamma = 0.5
                 # Change utility of players to incorporate minumum empathy pay-off
                 # self.payoffs = [payoffs[i] + (gamma * np.min(payoffs[list(self.graph.adj[i])])) for i in range(self.n_players)]
                 # Change utility of players to incorporate avg empathy pay-off

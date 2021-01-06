@@ -97,8 +97,12 @@ class NetworkPGG():
             if self.countries:
                 self.payoffs = compute_pgg_layered_payoffs(self.graph, self.players_money, self.player_strategies, self.mult_factor, self.countries)
             
-            # Change utility of players to incorporate average friends pay-off
-            # payoffs = [payoffs[i] + (gamma * np.min(payoffs[list(graph.adj[i])])) for i in range(len(player_strategies))]
+                payoffs = self.payoffs.copy()
+                gamma = 0.5
+                # Change utility of players to incorporate minumum empathy pay-off
+                # self.payoffs = [payoffs[i] + (gamma * np.min(payoffs[list(self.graph.adj[i])])) for i in range(self.n_players)]
+                # Change utility of players to incorporate avg empathy pay-off
+                # self.payoffs = [payoffs[i] + (gamma * np.mean(payoffs[list(self.graph.adj[i])])) for i in range(self.n_players)]
 
             # Update the players strategies
             new_player_strategies = Parallel(n_jobs=self.num_cores)(delayed(self.parallel_function)(i_player, list(self.graph.adj[i_player]), self.player_strategies, self.payoffs, self.players_money, self.alpha, self.noise_intensity) for i_player in range(len(self.player_strategies)))

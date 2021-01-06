@@ -8,7 +8,7 @@ To get some initial help type:
 Example runs for the three simulations:
     'python3 run_pgg.py --simulation spread --network BA --seed 100 --rounds 300 --player 100 --save '
     'python3 run_pgg.py --simulation spread --network WS --seed 42 --rounds 300 --player 30 --save'
-    'python3 run_pgg.py --simulation layered --network WS --seed 42 --rounds 50 --player 1000'
+    'python3 run_pgg.py --simulation layered --network WS --seed 42 --rounds 100 --player 100'
 """
 
 import argparse
